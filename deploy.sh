@@ -101,36 +101,71 @@ setup_user() {
 setup_database() {
     log_info "Setting up PostgreSQL database..."
     
-    # Generate a random secure password
-    DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-    log_info "Generated secure database password"
+    # Use a simple, known password for deployment
+    DB_PASSWORD="LosBloccatore2024!"
+    log_info "Using deployment database password"
     
-    # Create database user and database
+    # Clean up any existing setup
+    log_info "Cleaning up any existing database setup..."
+    sudo -u postgres psql -c "DROP DATABASE IF EXISTS losbloccatore;" 2>/dev/null || true
+    sudo -u postgres psql -c "DROP USER IF EXISTS losbloccatore_user;" 2>/dev/null || true
+    
+    # Create fresh user and database
     log_info "Creating database user and database..."
     
-    # Create user with generated password
-    sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname='losbloccatore_user'" | grep -q 1 || \
-    sudo -u postgres psql -c "CREATE USER losbloccatore_user WITH PASSWORD '$DB_PASSWORD';"
+    # Create user
+    sudo -u postgres psql -c "CREATE USER losbloccatore_user WITH PASSWORD '$DB_PASSWORD' CREATEDB;"
     
-    # Create database if it doesn't exist
-    sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw losbloccatore || \
+    # Create database
     sudo -u postgres psql -c "CREATE DATABASE losbloccatore OWNER losbloccatore_user;"
     
     # Grant all privileges
     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE losbloccatore TO losbloccatore_user;"
     
+    # Configure pg_hba.conf for proper authentication
+    log_info "Configuring PostgreSQL authentication..."
+    PG_VERSION=$(sudo -u postgres psql -t -c "SELECT version();" | grep -oP '\d+\.\d+' | head -1)
+    PG_HBA_FILE="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
+    
+    # Backup original pg_hba.conf
+    sudo cp "$PG_HBA_FILE" "${PG_HBA_FILE}.backup" 2>/dev/null || true
+    
+    # Ensure local and host connections use md5 authentication
+    if ! sudo grep -q "local.*all.*losbloccatore_user.*md5" "$PG_HBA_FILE"; then
+        sudo sed -i '/^local.*all.*all.*peer/i local   all             losbloccatore_user                              md5' "$PG_HBA_FILE"
+    fi
+    
+    if ! sudo grep -q "host.*all.*losbloccatore_user.*127.0.0.1.*md5" "$PG_HBA_FILE"; then
+        sudo sed -i '/^host.*all.*all.*127.0.0.1/i host    all             losbloccatore_user      127.0.0.1/32            md5' "$PG_HBA_FILE"
+    fi
+    
+    # Reload PostgreSQL configuration
+    sudo systemctl reload postgresql
+    
+    # Wait for reload
+    sleep 2
+    
     # Store password for later use in .env creation
     echo "$DB_PASSWORD" > /tmp/db_password
     
-    # Test connection
-    PGPASSWORD="$DB_PASSWORD" psql -h localhost -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1
+    # Test connection multiple ways
+    log_info "Testing database connection..."
     
-    if [ $? -eq 0 ]; then
-        log_success "Database setup completed and tested successfully"
+    # Test local connection first
+    if PGPASSWORD="$DB_PASSWORD" psql -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
+        log_success "Local database connection successful"
+    elif PGPASSWORD="$DB_PASSWORD" psql -h localhost -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
+        log_success "Host database connection successful"
     else
         log_error "Database connection test failed"
+        log_info "Checking PostgreSQL logs..."
+        sudo tail -5 /var/log/postgresql/postgresql-*-main.log 2>/dev/null || true
+        log_info "Checking if PostgreSQL is running..."
+        sudo systemctl status postgresql --no-pager
         exit 1
     fi
+    
+    log_success "Database setup completed successfully"
 }
 
 deploy_application() {
@@ -146,6 +181,9 @@ deploy_application() {
     
     cd "$APP_DIR"
     log_success "Using existing repository at $APP_DIR"
+    
+    # Fix git ownership issues
+    git config --global --add safe.directory "$APP_DIR"
     
     # Install ALL dependencies first (including dev for build)
     log_info "Installing Node.js dependencies (including dev for build)..."
@@ -355,9 +393,26 @@ show_status() {
     echo "  systemctl status postgresql     - Check database status"
 }
 
+# Cleanup function for failed deployments
+cleanup_failed_deployment() {
+    log_warning "Cleaning up failed deployment..."
+    
+    # Stop PM2 processes
+    sudo -u appuser pm2 stop losbloccatore 2>/dev/null || true
+    sudo -u appuser pm2 delete losbloccatore 2>/dev/null || true
+    
+    # Clean up temp files
+    rm -f /tmp/db_password
+    
+    log_info "Cleanup completed"
+}
+
 # Main execution
 main() {
     log_info "Starting LosBloccatore Bot deployment..."
+    
+    # Set trap for cleanup on failure
+    trap cleanup_failed_deployment EXIT
     
     check_root
     install_dependencies
@@ -370,7 +425,25 @@ main() {
     setup_nginx
     setup_firewall
     show_status
+    
+    # If we get here, deployment was successful
+    trap - EXIT
+    log_success "🎉 Deployment completed successfully!"
 }
 
-# Run main function
-main "$@"
+# Handle command line arguments
+case "${1:-}" in
+    "clean")
+        log_info "Performing clean deployment (removing existing setup)..."
+        sudo -u postgres psql -c "DROP DATABASE IF EXISTS losbloccatore;" 2>/dev/null || true
+        sudo -u postgres psql -c "DROP USER IF EXISTS losbloccatore_user;" 2>/dev/null || true
+        sudo -u appuser pm2 stop losbloccatore 2>/dev/null || true
+        sudo -u appuser pm2 delete losbloccatore 2>/dev/null || true
+        rm -f /opt/losbloccatore-bot/.env
+        log_success "Cleanup completed. Proceeding with fresh deployment..."
+        main
+        ;;
+    *)
+        main "$@"
+        ;;
+esac
