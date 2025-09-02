@@ -17,7 +17,8 @@ NC='\033[0m' # No Color
 # Configuration
 APP_NAME="losbloccatore-bot"
 APP_DIR="/opt/losbloccatore-bot"
-REPO_URL="git@github.com:loSpaccaBit/losbloccatore_bot.git"
+# Update this with your GitHub token
+REPO_URL="https://loSpaccaBit:YOUR_GITHUB_TOKEN@github.com/loSpaccaBit/losbloccatore_bot.git"
 NODE_VERSION="18"
 PM2_APP_NAME="losbloccatore"
 
@@ -127,20 +128,16 @@ EOF
 deploy_application() {
     log_info "Deploying application..."
     
-    # Create app directory
-    mkdir -p "$APP_DIR"
-    cd "$APP_DIR"
-    
-    # Clone or update repository
-    if [ -d ".git" ]; then
-        log_info "Updating existing repository..."
-        git fetch --all
-        git reset --hard origin/main
-        git clean -fd
-    else
-        log_info "Cloning repository..."
-        git clone "$REPO_URL" .
+    # Check if app directory exists (manually cloned)
+    if [ ! -d "$APP_DIR" ]; then
+        log_error "Application directory $APP_DIR not found!"
+        log_info "Please clone the repository manually:"
+        log_info "cd /opt && git clone https://github.com/loSpaccaBit/losbloccatore_bot.git losbloccatore-bot"
+        exit 1
     fi
+    
+    cd "$APP_DIR"
+    log_success "Using existing repository at $APP_DIR"
     
     # Install dependencies
     log_info "Installing Node.js dependencies..."
