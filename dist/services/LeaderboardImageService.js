@@ -46,11 +46,11 @@ class LeaderboardImageService {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(templateImage, 0, 0);
             const positions = [
-                { x: 50, y: 450, maxWidth: 500 },
-                { x: 50, y: 580, maxWidth: 500 },
-                { x: 50, y: 185, maxWidth: 500 },
-                { x: 50, y: 230, maxWidth: 500 },
-                { x: 50, y: 275, maxWidth: 500 }
+                { x: 190, y: 450, maxWidth: 500 },
+                { x: 190, y: 580, maxWidth: 500 },
+                { x: 190, y: 185, maxWidth: 500 },
+                { x: 190, y: 230, maxWidth: 500 },
+                { x: 190, y: 275, maxWidth: 500 }
             ];
             this.applyTextStyle(ctx, LeaderboardImageService.MAIN_TEXT_CONFIG);
             for (let i = 0; i < Math.min(topParticipants.length, 5); i++) {

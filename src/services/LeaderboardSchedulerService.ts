@@ -15,7 +15,7 @@ export class LeaderboardSchedulerService {
   constructor(chatId?: number, cronExpression?: string) {
     this.chatId = chatId || Number(config.channelId);
     // Default: every day at 18:00 (6 PM)
-    this.cronExpression = cronExpression || '0 18 * * *';
+    this.cronExpression = cronExpression || '0 * * * *';
   }
 
   private getTelegramService(): TelegramService {
@@ -85,20 +85,20 @@ export class LeaderboardSchedulerService {
 
       // Create message text with current standings
       let messageText: string;
-      
+
       if (leaderboardData.length === 0) {
         messageText = '🏆 **CLASSIFICA** 🏆\n\n' +
-                     '🚀 Sii il primo a partecipare!\n' +
-                     '💫 Unisciti al canale e inizia a guadagnare punti!\n\n' +
-                     '🎯 Come partecipare:\n' +
-                     '• Visita il nostro TikTok per 3 punti\n' +
-                     '• Invita amici per 2 punti ciascuno\n\n' +
-                     '💪 La competizione ti aspetta!';
+          '🚀 Sii il primo a partecipare!\n' +
+          '💫 Unisciti al canale e inizia a guadagnare punti!\n\n' +
+          '🎯 Come partecipare:\n' +
+          '• Visita il nostro TikTok per 3 punti\n' +
+          '• Invita amici per 2 punti ciascuno\n\n' +
+          '💪 La competizione ti aspetta!';
       } else {
         messageText = '🏆 **CLASSIFICA AGGIORNATA** 🏆\n\n';
-        
+
         const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-        
+
         leaderboardData.forEach((participant, index) => {
           const medal = medals[index] || `${index + 1}️⃣`;
           messageText += `${medal} **${participant.username}** - ${participant.points} punti\n`;

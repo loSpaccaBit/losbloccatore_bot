@@ -83,11 +83,11 @@ export class LeaderboardImageService {
 
       // Define improved positions for each rank closer to left edge
       const positions = [
-        { x: 50, y: 450, maxWidth: 500 }, // 1st place - closer to left edge
-        { x: 50, y: 580, maxWidth: 500 }, // 2nd place  
-        { x: 50, y: 185, maxWidth: 500 }, // 3rd place
-        { x: 50, y: 230, maxWidth: 500 }, // 4th place
-        { x: 50, y: 275, maxWidth: 500 }  // 5th place
+        { x: 190, y: 450, maxWidth: 500 }, // 1st place - closer to left edge
+        { x: 190, y: 580, maxWidth: 500 }, // 2nd place  
+        { x: 190, y: 185, maxWidth: 500 }, // 3rd place
+        { x: 190, y: 230, maxWidth: 500 }, // 4th place
+        { x: 190, y: 275, maxWidth: 500 }  // 5th place
       ];
 
       // Apply main text styling configuration
@@ -110,7 +110,7 @@ export class LeaderboardImageService {
         // Draw text with outline and shadow for better visibility
         const textX = position.x;
         const textY = position.y;
-        
+
         ctx.strokeText(truncatedText, textX, textY);
         ctx.fillText(truncatedText, textX, textY);
 
@@ -222,7 +222,7 @@ export class LeaderboardImageService {
         // Draw text with outline and shadow for better visibility
         const textX = position.x;
         const textY = position.y;
-        
+
         ctx.strokeText(text, textX, textY);
         ctx.fillText(text, textX, textY);
       }
