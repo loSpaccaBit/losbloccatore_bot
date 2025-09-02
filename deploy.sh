@@ -147,9 +147,9 @@ deploy_application() {
     log_info "Building application..."
     npm run build
     
-    # Install only production dependencies
+    # Install only production dependencies (skip scripts to avoid rebuild)
     log_info "Installing production dependencies only..."
-    npm ci --omit=dev
+    npm ci --omit=dev --ignore-scripts
     
     # Set proper ownership
     chown -R appuser:appuser "$APP_DIR"
