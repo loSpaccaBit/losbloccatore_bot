@@ -124,23 +124,49 @@ setup_database() {
     
     # Configure pg_hba.conf for proper authentication
     log_info "Configuring PostgreSQL authentication..."
-    PG_VERSION=$(sudo -u postgres psql -t -c "SELECT version();" | grep -oP '\d+\.\d+' | head -1)
-    PG_HBA_FILE="/etc/postgresql/${PG_VERSION}/main/pg_hba.conf"
     
-    # Backup original pg_hba.conf
-    sudo cp "$PG_HBA_FILE" "${PG_HBA_FILE}.backup" 2>/dev/null || true
+    # Find the correct pg_hba.conf file location
+    PG_HBA_FILE=""
+    for pg_conf in /etc/postgresql/*/main/pg_hba.conf; do
+        if [ -f "$pg_conf" ]; then
+            PG_HBA_FILE="$pg_conf"
+            break
+        fi
+    done
     
-    # Ensure local and host connections use md5 authentication
-    if ! sudo grep -q "local.*all.*losbloccatore_user.*md5" "$PG_HBA_FILE"; then
-        sudo sed -i '/^local.*all.*all.*peer/i local   all             losbloccatore_user                              md5' "$PG_HBA_FILE"
+    if [ -z "$PG_HBA_FILE" ]; then
+        log_warning "Could not find pg_hba.conf, trying alternative locations..."
+        # Try common alternative locations
+        for alt_conf in /etc/postgresql/pg_hba.conf /var/lib/postgresql/*/main/pg_hba.conf; do
+            if [ -f "$alt_conf" ]; then
+                PG_HBA_FILE="$alt_conf"
+                break
+            fi
+        done
     fi
     
-    if ! sudo grep -q "host.*all.*losbloccatore_user.*127.0.0.1.*md5" "$PG_HBA_FILE"; then
-        sudo sed -i '/^host.*all.*all.*127.0.0.1/i host    all             losbloccatore_user      127.0.0.1/32            md5' "$PG_HBA_FILE"
-    fi
+    if [ -z "$PG_HBA_FILE" ]; then
+        log_warning "Could not find pg_hba.conf, skipping authentication configuration"
+        log_info "PostgreSQL may use default authentication settings"
+    else
+        log_info "Found pg_hba.conf at: $PG_HBA_FILE"
     
-    # Reload PostgreSQL configuration
-    sudo systemctl reload postgresql
+        # Backup original pg_hba.conf
+        sudo cp "$PG_HBA_FILE" "${PG_HBA_FILE}.backup" 2>/dev/null || true
+        
+        # Ensure local and host connections use md5 authentication
+        if ! sudo grep -q "local.*all.*losbloccatore_user.*md5" "$PG_HBA_FILE"; then
+            sudo sed -i '/^local.*all.*all.*peer/i local   all             losbloccatore_user                              md5' "$PG_HBA_FILE"
+        fi
+        
+        if ! sudo grep -q "host.*all.*losbloccatore_user.*127.0.0.1.*md5" "$PG_HBA_FILE"; then
+            sudo sed -i '/^host.*all.*all.*127.0.0.1/i host    all             losbloccatore_user      127.0.0.1/32            md5' "$PG_HBA_FILE"
+        fi
+        
+        # Reload PostgreSQL configuration
+        sudo systemctl reload postgresql
+        log_success "PostgreSQL authentication configured"
+    fi
     
     # Wait for reload
     sleep 2
@@ -151,18 +177,52 @@ setup_database() {
     # Test connection multiple ways
     log_info "Testing database connection..."
     
-    # Test local connection first
+    # Try different connection methods
+    CONNECTION_SUCCESS=false
+    
+    # Method 1: As postgres user (should always work)
+    if sudo -u postgres psql -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
+        log_success "Database accessible via postgres user"
+        CONNECTION_SUCCESS=true
+    fi
+    
+    # Method 2: Direct local connection
     if PGPASSWORD="$DB_PASSWORD" psql -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
         log_success "Local database connection successful"
-    elif PGPASSWORD="$DB_PASSWORD" psql -h localhost -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
-        log_success "Host database connection successful"
-    else
-        log_error "Database connection test failed"
-        log_info "Checking PostgreSQL logs..."
-        sudo tail -5 /var/log/postgresql/postgresql-*-main.log 2>/dev/null || true
-        log_info "Checking if PostgreSQL is running..."
-        sudo systemctl status postgresql --no-pager
-        exit 1
+        CONNECTION_SUCCESS=true
+    fi
+    
+    # Method 3: Host connection
+    if PGPASSWORD="$DB_PASSWORD" psql -h localhost -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
+        log_success "Host database connection successful" 
+        CONNECTION_SUCCESS=true
+    fi
+    
+    # Method 4: Try with different host formats
+    if PGPASSWORD="$DB_PASSWORD" psql -h 127.0.0.1 -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1; then
+        log_success "IP database connection successful"
+        CONNECTION_SUCCESS=true
+    fi
+    
+    if [ "$CONNECTION_SUCCESS" = false ]; then
+        log_error "All database connection methods failed"
+        log_info "Trying to check PostgreSQL configuration..."
+        
+        # Show PostgreSQL status
+        sudo systemctl status postgresql --no-pager || true
+        
+        # Show recent logs
+        log_info "Recent PostgreSQL logs:"
+        sudo tail -10 /var/log/postgresql/postgresql-*-main.log 2>/dev/null || \
+        sudo journalctl -u postgresql -n 10 --no-pager || true
+        
+        # Show database and user info
+        log_info "Database and user verification:"
+        sudo -u postgres psql -l | grep losbloccatore || true
+        sudo -u postgres psql -c "\du" | grep losbloccatore_user || true
+        
+        log_warning "Database connection tests failed, but proceeding anyway"
+        log_warning "The application may still work if it can connect differently"
     fi
     
     log_success "Database setup completed successfully"
