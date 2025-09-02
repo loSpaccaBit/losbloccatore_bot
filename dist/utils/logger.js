@@ -9,11 +9,14 @@ const index_1 = __importDefault(require("../config/index"));
 const path_1 = __importDefault(require("path"));
 class Logger {
     constructor() {
+        this.bigIntReplacer = (_key, value) => {
+            return typeof value === 'bigint' ? value.toString() : value;
+        };
         this.logger = winston_1.default.createLogger({
             level: index_1.default.logging.level,
             format: winston_1.default.format.combine(winston_1.default.format.timestamp({
                 format: 'YYYY-MM-DD HH:mm:ss'
-            }), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json()),
+            }), winston_1.default.format.errors({ stack: true }), winston_1.default.format.json({ replacer: this.bigIntReplacer })),
             defaultMeta: {
                 service: 'losbloccatore-bot',
                 environment: index_1.default.environment
@@ -23,7 +26,7 @@ class Logger {
         if (index_1.default.environment === 'development') {
             this.logger.add(new winston_1.default.transports.Console({
                 format: winston_1.default.format.combine(winston_1.default.format.colorize(), winston_1.default.format.simple(), winston_1.default.format.printf(({ timestamp, level, message, service, ...meta }) => {
-                    const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+                    const metaStr = Object.keys(meta).length ? JSON.stringify(meta, this.bigIntReplacer, 2) : '';
                     return `${timestamp} [${service}] ${level}: ${message} ${metaStr}`;
                 }))
             }));

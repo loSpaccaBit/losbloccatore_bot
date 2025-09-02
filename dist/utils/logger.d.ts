@@ -1,5 +1,6 @@
 declare class Logger {
     private logger;
+    private bigIntReplacer;
     constructor();
     private createTransports;
     info(message: string, meta?: any): void;

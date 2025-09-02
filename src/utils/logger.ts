@@ -6,6 +6,13 @@ import path from 'path';
 class Logger {
   private logger: winston.Logger;
 
+  /**
+   * JSON replacer function to handle BigInt serialization
+   */
+  private bigIntReplacer = (_key: string, value: any): any => {
+    return typeof value === 'bigint' ? value.toString() : value;
+  };
+
   constructor() {
     this.logger = winston.createLogger({
       level: config.logging.level,
@@ -14,7 +21,7 @@ class Logger {
           format: 'YYYY-MM-DD HH:mm:ss'
         }),
         winston.format.errors({ stack: true }),
-        winston.format.json()
+        winston.format.json({ replacer: this.bigIntReplacer })
       ),
       defaultMeta: {
         service: 'losbloccatore-bot',
@@ -30,7 +37,7 @@ class Logger {
           winston.format.colorize(),
           winston.format.simple(),
           winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-            const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+            const metaStr = Object.keys(meta).length ? JSON.stringify(meta, this.bigIntReplacer, 2) : '';
             return `${timestamp} [${service}] ${level}: ${message} ${metaStr}`;
           })
         )

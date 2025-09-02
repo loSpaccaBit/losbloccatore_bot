@@ -120,6 +120,14 @@ export class TikTokTaskHandler {
    */
   private async isTimingRequirementMet(ctx: Context, userId: number): Promise<boolean> {
     const welcomeTime = cache.get(`welcome_sent:${userId}`) as number;
+    
+    logger.debug('Checking TikTok timing requirement', {
+      userId,
+      welcomeTime,
+      currentTime: Date.now(),
+      timeSinceWelcome: welcomeTime ? Date.now() - welcomeTime : 'no_welcome_time'
+    });
+    
     if (!welcomeTime || Date.now() - welcomeTime < 30000) {
       const waitMessage = await messageService.loadMessage('tiktok_wait_required')
         .catch(() => '⚠️ Devi prima cliccare "Apri TikTok", visitare la pagina e seguire/commentare! Attendi almeno 30 secondi.');
@@ -134,6 +142,11 @@ export class TikTokTaskHandler {
       });
       return false;
     }
+    
+    logger.info('TikTok timing requirement met', {
+      userId,
+      timeSinceWelcome: Date.now() - welcomeTime
+    });
     return true;
   }
 

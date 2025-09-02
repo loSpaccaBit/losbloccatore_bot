@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -39,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TelegramMessageService = void 0;
 const MessageService_1 = __importDefault(require("../../services/MessageService"));
 const logger_1 = __importDefault(require("../../utils/logger"));
+const cache_1 = __importDefault(require("../../utils/cache"));
 const promises_1 = require("fs/promises");
 const path_1 = require("path");
 class TelegramMessageService {
@@ -72,7 +40,7 @@ class TelegramMessageService {
                 messageText = `🎉 Benvenuto ${userName}!\n\nCompleta il task TikTok per guadagnare punti e invita i tuoi amici!\n\n🔗 Il tuo link: ${referralLink}`;
             }
             try {
-                const photoPath = (0, path_1.join)(process.cwd(), 'media', 'welcome-image.jpg');
+                const photoPath = (0, path_1.join)(process.cwd(), 'media', 'istruzioni.png');
                 const photoBuffer = await (0, promises_1.readFile)(photoPath);
                 await bot.telegram.sendPhoto(userId, { source: photoBuffer }, {
                     caption: messageText,
@@ -80,18 +48,17 @@ class TelegramMessageService {
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() },
-                                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
+                                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() }
                             ],
                             [
-                                { text: '👥 Invita Amici', url: referralLink }
+                                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
                             ]
                         ]
                     }
                 });
-                const cache = (await Promise.resolve().then(() => __importStar(require('@utils/cache')))).default;
-                cache.set(`welcome_sent:${userId}`, Date.now(), 1800);
-                logger_1.default.info('Welcome message with photo sent successfully', { userId, userName });
+                const welcomeTimestamp = Date.now();
+                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800);
+                logger_1.default.info('Welcome message with photo sent successfully', { userId, userName, welcomeTimestamp });
                 return true;
             }
             catch (photoError) {
@@ -106,18 +73,17 @@ class TelegramMessageService {
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() },
-                                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
+                                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() }
                             ],
                             [
-                                { text: '👥 Invita Amici', url: referralLink }
+                                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
                             ]
                         ]
                     }
                 });
-                const cache = (await Promise.resolve().then(() => __importStar(require('@utils/cache')))).default;
-                cache.set(`welcome_sent:${userId}`, Date.now(), 1800);
-                logger_1.default.info('Welcome text message sent successfully', { userId, userName });
+                const welcomeTimestamp = Date.now();
+                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800);
+                logger_1.default.info('Welcome text message sent successfully', { userId, userName, welcomeTimestamp });
                 return true;
             }
         }
@@ -176,7 +142,7 @@ class TelegramMessageService {
             const bot = this.coreService.getBot();
             let messageText;
             try {
-                messageText = await MessageService_1.default.loadMessage('tiktok_points_success', {
+                messageText = await MessageService_1.default.loadMessage('tiktok_points_earned', {
                     variables: {
                         userName,
                         totalPoints: totalPoints.toString(),
@@ -188,17 +154,40 @@ class TelegramMessageService {
                 logger_1.default.warn('Failed to load TikTok success template, using fallback', { userId, error: templateError });
                 messageText = `🎉 Complimenti ${userName}!\n\nHai completato il task TikTok: +3 punti!\n\n📊 Punti totali: ${totalPoints}\n\n🔗 Il tuo link: ${referralLink}\n\nContinua a invitare amici per guadagnare altri punti!`;
             }
-            await bot.telegram.sendMessage(userId, messageText, {
-                parse_mode: 'Markdown',
-                link_preview_options: { is_disabled: true },
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '👥 Invita Amici', url: referralLink }
+            try {
+                await bot.telegram.sendMessage(userId, messageText, {
+                    parse_mode: 'Markdown',
+                    link_preview_options: { is_disabled: true },
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '👥 Invita Amici', url: referralLink }
+                            ]
                         ]
-                    ]
+                    }
+                });
+            }
+            catch (markdownError) {
+                if (markdownError.message?.includes('parse entities')) {
+                    logger_1.default.warn('Markdown parsing failed in TikTok success message, sending without formatting', {
+                        userId,
+                        error: markdownError.message
+                    });
+                    await bot.telegram.sendMessage(userId, messageText.replace(/[*_`\[\]()]/g, ''), {
+                        link_preview_options: { is_disabled: true },
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: '👥 Invita Amici', url: referralLink }
+                                ]
+                            ]
+                        }
+                    });
                 }
-            });
+                else {
+                    throw markdownError;
+                }
+            }
             logger_1.default.info('TikTok points message sent successfully', { userId, userName, totalPoints });
             return true;
         }

@@ -194,10 +194,167 @@ export class ContestService {
           chatId,
           participantId: prismaParticipant.id
         });
+
+        // Process referral for reactivated user if referral code is provided
+        if (referralCode) {
+          await this.processReferralForReturningUser(userId, chatId, referralCode);
+        }
       }
     }
 
     return new ContestParticipant(prismaParticipant);
+  }
+
+  /**
+   * Process referral for a returning user who joined via referral link
+   */
+  private async processReferralForReturningUser(userId: number, chatId: number, referralCode: string): Promise<void> {
+    logger.info('Processing referral for returning user', { userId, chatId, referralCode });
+    
+    // Find the referrer
+    let referrer = await this.findParticipantByReferralCode(referralCode);
+    logger.debug('Referrer search by referralCode result', { 
+      referralCode, 
+      found: !!referrer,
+      referrerId: referrer?.userId?.toString() 
+    });
+    
+    if (!referrer && /^\d+$/.test(referralCode)) {
+      // Fallback for numeric referral codes
+      const referrerUserId = BigInt(referralCode);
+      logger.debug('Trying numeric referral code fallback', { 
+        referrerUserId: referrerUserId.toString(),
+        chatId 
+      });
+      
+      const prismaReferrer = await this.prisma.contestParticipant.findFirst({
+        where: { 
+          userId: referrerUserId,
+          chatId: BigInt(chatId)
+        }
+      });
+      if (prismaReferrer) {
+        referrer = new ContestParticipant(prismaReferrer);
+        logger.debug('Referrer found via numeric fallback', { 
+          referrerId: prismaReferrer.userId.toString(),
+          referrerName: prismaReferrer.firstName 
+        });
+      }
+    }
+
+    if (!referrer) {
+      logger.warn('Referrer not found for returning user', { userId, chatId, referralCode });
+      return;
+    }
+
+    logger.debug('Referrer found for returning user', {
+      userId,
+      referrerId: referrer.userId.toString(),
+      referrerName: referrer.firstName
+    });
+
+    // Check if there's an existing referral relationship
+    const existingReferral = await this.prisma.contestReferral.findFirst({
+      where: {
+        referredUserId: BigInt(userId),
+        chatId: BigInt(chatId)
+      }
+    });
+
+    logger.debug('Existing referral check result', {
+      userId,
+      existingReferral: existingReferral ? {
+        id: existingReferral.id,
+        referrerId: existingReferral.referrerId.toString(),
+        status: existingReferral.status,
+        pointsAwarded: existingReferral.pointsAwarded
+      } : null,
+      currentReferrerId: referrer.userId.toString()
+    });
+
+    // If there's an existing active referral from the same referrer, just log it
+    if (existingReferral && existingReferral.referrerId === referrer.userId && existingReferral.status === ReferralStatus.ACTIVE) {
+      logger.info('Referral relationship already active', {
+        userId,
+        referrerId: referrer.userId.toString(),
+        referralId: existingReferral.id
+      });
+      return;
+    }
+
+    // If there's an existing referral but it was revoked/left, reactivate it
+    if (existingReferral && existingReferral.referrerId === referrer.userId && 
+        (existingReferral.status === ReferralStatus.POINTS_REVOKED || existingReferral.status === ReferralStatus.LEFT)) {
+      
+      logger.info('Reactivating existing referral relationship', {
+        userId,
+        referrerId: referrer.userId.toString(),
+        previousStatus: existingReferral.status,
+        referralId: existingReferral.id
+      });
+
+      await this.prisma.contestReferral.update({
+        where: { id: existingReferral.id },
+        data: { 
+          status: ReferralStatus.POINTS_AWARDED,
+          leftAt: null // Clear the leftAt timestamp
+        }
+      });
+
+      // Re-award points to referrer
+      const updateResult = await this.prisma.contestParticipant.updateMany({
+        where: { 
+          userId: referrer.userId,
+          chatId: BigInt(chatId)
+        },
+        data: {
+          points: { increment: 2 },
+          referralCount: { increment: 1 }
+        }
+      });
+
+      logger.info('Referral reactivated and points re-awarded', {
+        userId,
+        referrerId: referrer.userId.toString(),
+        pointsAwarded: 2,
+        updatedCount: updateResult.count,
+        previousStatus: existingReferral.status
+      });
+      return;
+    }
+
+    // If there's a different referrer or no existing referral, create new referral
+    if (!existingReferral || existingReferral.referrerId !== referrer.userId) {
+      // Create new referral relationship
+      await this.prisma.contestReferral.create({
+        data: {
+          referrerId: referrer.userId,
+          referredUserId: BigInt(userId),
+          chatId: BigInt(chatId),
+          status: ReferralStatus.ACTIVE,
+          pointsAwarded: 2
+        }
+      });
+
+      // Award points to referrer
+      const updateResult = await this.prisma.contestParticipant.updateMany({
+        where: { 
+          userId: referrer.userId,
+          chatId: BigInt(chatId)
+        },
+        data: {
+          points: { increment: 2 },
+          referralCount: { increment: 1 }
+        }
+      });
+
+      logger.info('New referral created for returning user', {
+        userId,
+        referrerId: referrer.userId.toString(),
+        updatedCount: updateResult.count,
+        pointsAwarded: 2
+      });
+    }
   }
 
   async findParticipantByReferralCode(referralCode: string): Promise<ContestParticipant | null> {

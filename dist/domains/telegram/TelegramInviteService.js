@@ -15,7 +15,9 @@ class TelegramInviteService {
     async createChannelInviteLink(chatId, name, expireDate, memberLimit) {
         try {
             const bot = this.coreService.getBot();
-            const linkOptions = {};
+            const linkOptions = {
+                creates_join_request: true
+            };
             if (name)
                 linkOptions.name = name;
             if (expireDate)

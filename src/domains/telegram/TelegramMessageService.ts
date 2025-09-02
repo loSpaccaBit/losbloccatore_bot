@@ -2,6 +2,7 @@ import { TelegramCoreService } from './TelegramCoreService';
 import { GoodbyeMessageOptions } from '../../types';
 import messageService from '../../services/MessageService';
 import logger from '../../utils/logger';
+import cache from '../../utils/cache';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
@@ -66,7 +67,7 @@ export class TelegramMessageService {
 
       // Try to load and send welcome photo
       try {
-        const photoPath = join(process.cwd(), 'media', 'welcome-image.jpg');
+        const photoPath = join(process.cwd(), 'media', 'istruzioni.png');
         const photoBuffer = await readFile(photoPath);
         
         await bot.telegram.sendPhoto(userId, { source: photoBuffer }, {
@@ -75,21 +76,20 @@ export class TelegramMessageService {
           reply_markup: {
             inline_keyboard: [
               [
-                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() },
-                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
+                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() }
               ],
               [
-                { text: '👥 Invita Amici', url: referralLink }
+                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
               ]
             ]
           }
         });
 
         // Cache welcome message timestamp for TikTok timing validation
-        const cache = (await import('@utils/cache')).default;
-        cache.set(`welcome_sent:${userId}`, Date.now(), 1800); // 30 minutes TTL
+        const welcomeTimestamp = Date.now();
+        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800); // 30 minutes TTL
 
-        logger.info('Welcome message with photo sent successfully', { userId, userName });
+        logger.info('Welcome message with photo sent successfully', { userId, userName, welcomeTimestamp });
         return true;
 
       } catch (photoError) {
@@ -106,21 +106,20 @@ export class TelegramMessageService {
           reply_markup: {
             inline_keyboard: [
               [
-                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() },
-                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
+                { text: '🎵 Apri TikTok', url: await this.getTikTokUrl() }
               ],
               [
-                { text: '👥 Invita Amici', url: referralLink }
+                { text: '✅ Ho visitato TikTok', callback_data: tiktokCallbackData }
               ]
             ]
           }
         });
 
         // Cache welcome message timestamp for TikTok timing validation
-        const cache = (await import('@utils/cache')).default;
-        cache.set(`welcome_sent:${userId}`, Date.now(), 1800); // 30 minutes TTL
+        const welcomeTimestamp = Date.now();
+        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800); // 30 minutes TTL
 
-        logger.info('Welcome text message sent successfully', { userId, userName });
+        logger.info('Welcome text message sent successfully', { userId, userName, welcomeTimestamp });
         return true;
       }
 
@@ -192,7 +191,7 @@ export class TelegramMessageService {
       // Load TikTok success template
       let messageText: string;
       try {
-        messageText = await messageService.loadMessage('tiktok_points_success', {
+        messageText = await messageService.loadMessage('tiktok_points_earned', {
           variables: {
             userName,
             totalPoints: totalPoints.toString(),
@@ -204,17 +203,39 @@ export class TelegramMessageService {
         messageText = `🎉 Complimenti ${userName}!\n\nHai completato il task TikTok: +3 punti!\n\n📊 Punti totali: ${totalPoints}\n\n🔗 Il tuo link: ${referralLink}\n\nContinua a invitare amici per guadagnare altri punti!`;
       }
 
-      await bot.telegram.sendMessage(userId, messageText, {
-        parse_mode: 'Markdown',
-        link_preview_options: { is_disabled: true },
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: '👥 Invita Amici', url: referralLink }
+      try {
+        await bot.telegram.sendMessage(userId, messageText, {
+          parse_mode: 'Markdown',
+          link_preview_options: { is_disabled: true },
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: '👥 Invita Amici', url: referralLink }
+              ]
             ]
-          ]
+          }
+        });
+      } catch (markdownError: any) {
+        if (markdownError.message?.includes('parse entities')) {
+          logger.warn('Markdown parsing failed in TikTok success message, sending without formatting', { 
+            userId, 
+            error: markdownError.message 
+          });
+          // Fallback without markdown
+          await bot.telegram.sendMessage(userId, messageText.replace(/[*_`\[\]()]/g, ''), {
+            link_preview_options: { is_disabled: true },
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: '👥 Invita Amici', url: referralLink }
+                ]
+              ]
+            }
+          });
+        } else {
+          throw markdownError;
         }
-      });
+      }
 
       logger.info('TikTok points message sent successfully', { userId, userName, totalPoints });
       return true;

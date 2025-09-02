@@ -22,7 +22,9 @@ export class TelegramInviteService {
     try {
       const bot = this.coreService.getBot();
       
-      const linkOptions: any = {};
+      const linkOptions: any = {
+        creates_join_request: true // Ensures users still need approval
+      };
       if (name) linkOptions.name = name;
       if (expireDate) linkOptions.expire_date = expireDate;
       if (memberLimit) linkOptions.member_limit = memberLimit;

@@ -3,6 +3,7 @@ export declare class ContestService {
     private prisma;
     constructor();
     getOrCreateParticipant(userId: number, chatId: number, firstName: string, lastName?: string, username?: string, referralCode?: string): Promise<ContestParticipant>;
+    private processReferralForReturningUser;
     findParticipantByReferralCode(referralCode: string): Promise<ContestParticipant | null>;
     completeTiktokTaskViaButton(userId: number, chatId: number): Promise<boolean>;
     handleTiktokSubmission(userId: number, chatId: number, tiktokLink: string): Promise<boolean>;
