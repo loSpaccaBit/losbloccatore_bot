@@ -55,6 +55,10 @@ install_dependencies() {
     # Install essential packages
     apt install -y curl wget git build-essential software-properties-common
     
+    # Install Canvas dependencies for image generation
+    log_info "Installing Canvas dependencies..."
+    apt install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+    
     # Install Node.js via NodeSource
     if ! command -v node &> /dev/null; then
         log_info "Installing Node.js ${NODE_VERSION}..."
@@ -249,6 +253,10 @@ deploy_application() {
     log_info "Installing Node.js dependencies (including dev for build)..."
     npm ci
     
+    # Rebuild Canvas with correct system libraries
+    log_info "Rebuilding Canvas with system libraries..."
+    npm rebuild canvas --verbose
+    
     # Build application
     log_info "Building application..."
     npm run build
@@ -256,6 +264,10 @@ deploy_application() {
     # Install only production dependencies (skip scripts to avoid rebuild)
     log_info "Installing production dependencies only..."
     npm ci --omit=dev --ignore-scripts
+    
+    # Rebuild Canvas again for production
+    log_info "Rebuilding Canvas for production..."
+    npm rebuild canvas --verbose
     
     # Set proper ownership
     chown -R appuser:appuser "$APP_DIR"
@@ -354,45 +366,21 @@ setup_pm2() {
     log_success "PM2 configured and application started"
 }
 
-setup_nginx() {
-    log_info "Setting up Nginx reverse proxy..."
+cleanup_nginx() {
+    log_info "Cleaning up Nginx configuration (not needed for polling bot)..."
     
-    # Install Nginx if not present
-    if ! command -v nginx &> /dev/null; then
-        apt install -y nginx
-    fi
+    # Stop and disable Nginx if running
+    systemctl stop nginx 2>/dev/null || true
+    systemctl disable nginx 2>/dev/null || true
     
-    # Create Nginx configuration
-    cat > /etc/nginx/sites-available/losbloccatore-bot << EOF
-server {
-    listen 80;
-    server_name your-domain.com;  # Update this with your domain
+    # Remove Nginx configuration files
+    rm -f /etc/nginx/sites-available/losbloccatore-bot
+    rm -f /etc/nginx/sites-enabled/losbloccatore-bot
     
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
-    }
-}
-EOF
+    # Optional: Remove Nginx entirely (commented out by default)
+    # apt remove -y nginx nginx-common nginx-core 2>/dev/null || true
     
-    # Enable the site
-    ln -sf /etc/nginx/sites-available/losbloccatore-bot /etc/nginx/sites-enabled/
-    
-    # Remove default site if exists
-    rm -f /etc/nginx/sites-enabled/default
-    
-    # Test and restart Nginx
-    nginx -t && systemctl restart nginx
-    systemctl enable nginx
-    
-    log_success "Nginx configured"
+    log_success "Nginx cleanup completed (service stopped and disabled)"
 }
 
 setup_firewall() {
@@ -410,13 +398,12 @@ setup_firewall() {
     
     # Allow essential ports
     ufw allow ssh
-    ufw allow 80/tcp   # HTTP
-    ufw allow 443/tcp  # HTTPS
+    # Note: No HTTP/HTTPS ports needed for Telegram polling bot
     
     # Enable firewall
     ufw --force enable
     
-    log_success "Firewall configured"
+    log_success "Firewall configured (SSH only for polling bot)"
 }
 
 show_status() {
@@ -433,23 +420,19 @@ show_status() {
     
     echo ""
     echo "System Status:"
-    systemctl is-active nginx && echo "✅ Nginx: Running" || echo "❌ Nginx: Stopped"
     systemctl is-active postgresql && echo "✅ PostgreSQL: Running" || echo "❌ PostgreSQL: Stopped"
     
     echo ""
     log_success "Deployment completed!"
     echo "=================================="
     echo "🔧 Next steps:"
-    echo "1. Edit $APP_DIR/.env with your configuration"
-    echo "2. Update Nginx server_name in /etc/nginx/sites-available/losbloccatore-bot"
-    echo "3. Setup SSL certificate (recommended: certbot)"
-    echo "4. Test your bot with /start command"
+    echo "1. Edit $APP_DIR/.env with your BOT_TOKEN and CHANNEL_ID"
+    echo "2. Test your bot with /start command"
     echo ""
     echo "📋 Useful commands:"
     echo "  pm2 logs $PM2_APP_NAME          - View application logs"
     echo "  pm2 restart $PM2_APP_NAME       - Restart application"
     echo "  pm2 monit                       - Monitor PM2 processes"
-    echo "  systemctl status nginx          - Check Nginx status"
     echo "  systemctl status postgresql     - Check database status"
 }
 
@@ -482,7 +465,7 @@ main() {
     setup_environment
     setup_database_schema
     setup_pm2
-    setup_nginx
+    cleanup_nginx
     setup_firewall
     show_status
     
@@ -500,6 +483,13 @@ case "${1:-}" in
         sudo -u appuser pm2 stop losbloccatore 2>/dev/null || true
         sudo -u appuser pm2 delete losbloccatore 2>/dev/null || true
         rm -f /opt/losbloccatore-bot/.env
+        
+        # Clean up Nginx
+        systemctl stop nginx 2>/dev/null || true
+        systemctl disable nginx 2>/dev/null || true
+        rm -f /etc/nginx/sites-available/losbloccatore-bot
+        rm -f /etc/nginx/sites-enabled/losbloccatore-bot
+        
         log_success "Cleanup completed. Proceeding with fresh deployment..."
         main
         ;;
