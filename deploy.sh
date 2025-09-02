@@ -101,28 +101,36 @@ setup_user() {
 setup_database() {
     log_info "Setting up PostgreSQL database..."
     
-    # Switch to postgres user and create database/user
-    sudo -u postgres psql <<EOF
-DO \$\$
-BEGIN
-    -- Create database user if not exists
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'losbloccatore_user') THEN
-        CREATE USER losbloccatore_user WITH PASSWORD 'your_secure_password_here';
-    END IF;
+    # Generate a random secure password
+    DB_PASSWORD=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
+    log_info "Generated secure database password"
     
-    -- Create database if not exists
-    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'losbloccatore') THEN
-        CREATE DATABASE losbloccatore OWNER losbloccatore_user;
-    END IF;
+    # Create database user and database
+    log_info "Creating database user and database..."
     
-    -- Grant privileges
-    GRANT ALL PRIVILEGES ON DATABASE losbloccatore TO losbloccatore_user;
-END
-\$\$;
-EOF
+    # Create user with generated password
+    sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname='losbloccatore_user'" | grep -q 1 || \
+    sudo -u postgres psql -c "CREATE USER losbloccatore_user WITH PASSWORD '$DB_PASSWORD';"
     
-    log_success "Database setup completed"
-    log_warning "Remember to update DB_PASSWORD in .env file!"
+    # Create database if it doesn't exist
+    sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw losbloccatore || \
+    sudo -u postgres psql -c "CREATE DATABASE losbloccatore OWNER losbloccatore_user;"
+    
+    # Grant all privileges
+    sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE losbloccatore TO losbloccatore_user;"
+    
+    # Store password for later use in .env creation
+    echo "$DB_PASSWORD" > /tmp/db_password
+    
+    # Test connection
+    PGPASSWORD="$DB_PASSWORD" psql -h localhost -U losbloccatore_user -d losbloccatore -c "SELECT 1;" > /dev/null 2>&1
+    
+    if [ $? -eq 0 ]; then
+        log_success "Database setup completed and tested successfully"
+    else
+        log_error "Database connection test failed"
+        exit 1
+    fi
 }
 
 deploy_application() {
@@ -160,10 +168,19 @@ deploy_application() {
 setup_environment() {
     log_info "Setting up environment configuration..."
     
+    # Get the generated database password
+    if [ -f "/tmp/db_password" ]; then
+        DB_PASS=$(cat /tmp/db_password)
+    else
+        log_error "Database password not found! Database setup may have failed."
+        exit 1
+    fi
+    
     # Create .env file if it doesn't exist
     if [ ! -f "$APP_DIR/.env" ]; then
         cat > "$APP_DIR/.env" << EOF
 # Production Environment Configuration
+# Generated: $(date)
 NODE_ENV=production
 PORT=3000
 
@@ -172,16 +189,16 @@ BOT_TOKEN=your_bot_token_here
 CHANNEL_ID=your_channel_id_here
 
 # Database Configuration
-DATABASE_URL=postgresql://losbloccatore_user:your_secure_password_here@localhost:5432/losbloccatore
+DATABASE_URL=postgresql://losbloccatore_user:${DB_PASS}@localhost:5432/losbloccatore
 DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=losbloccatore_user
-DB_PASSWORD=your_secure_password_here
+DB_PASSWORD=${DB_PASS}
 DB_NAME=losbloccatore
+DB_LOGGING=false
 
 # Logging Configuration
 LOG_LEVEL=info
-DB_LOGGING=false
 
 # Cache Configuration
 CACHE_TTL=3600
@@ -193,10 +210,14 @@ EOF
         chown appuser:appuser "$APP_DIR/.env"
         chmod 600 "$APP_DIR/.env"
         
-        log_warning "Created .env file at $APP_DIR/.env"
-        log_warning "Please edit this file with your actual configuration!"
+        log_success "Created .env file with auto-generated database credentials"
+        log_warning "⚠️  IMPORTANT: Edit BOT_TOKEN and CHANNEL_ID in $APP_DIR/.env"
+        
+        # Clean up temporary password file
+        rm -f /tmp/db_password
     else
         log_success "Environment file already exists"
+        rm -f /tmp/db_password
     fi
 }
 
