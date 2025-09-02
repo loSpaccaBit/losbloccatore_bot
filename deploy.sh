@@ -139,13 +139,17 @@ deploy_application() {
     cd "$APP_DIR"
     log_success "Using existing repository at $APP_DIR"
     
-    # Install dependencies
-    log_info "Installing Node.js dependencies..."
-    npm ci --production
+    # Install ALL dependencies first (including dev for build)
+    log_info "Installing Node.js dependencies (including dev for build)..."
+    npm ci
     
     # Build application
     log_info "Building application..."
     npm run build
+    
+    # Install only production dependencies
+    log_info "Installing production dependencies only..."
+    npm ci --omit=dev
     
     # Set proper ownership
     chown -R appuser:appuser "$APP_DIR"
