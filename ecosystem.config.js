@@ -55,7 +55,7 @@ module.exports = {
       user: 'appuser',
       host: ['your-server-ip'], // Update with your server IP
       ref: 'origin/main',
-      repo: 'https://github.com/your-username/losbloccatore-bot.git', // Update this
+      repo: 'git@github.com:loSpaccaBit/losbloccatore_bot.git',
       path: '/opt/losbloccatore-bot',
       'pre-deploy-local': '',
       'post-deploy': 'npm ci --production && npm run build && npm run db:deploy && pm2 reload ecosystem.config.js --env production',

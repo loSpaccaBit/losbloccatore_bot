@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 # Configuration
 APP_NAME="losbloccatore-bot"
 APP_DIR="/opt/losbloccatore-bot"
-REPO_URL="https://github.com/your-username/losbloccatore-bot.git"  # Update this!
+REPO_URL="git@github.com:loSpaccaBit/losbloccatore_bot.git"
 NODE_VERSION="18"
 PM2_APP_NAME="losbloccatore"
 
