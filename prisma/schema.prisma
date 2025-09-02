@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserAction {
+  JOINED
+  LEFT
+  APPROVED
+  REJECTED
+}
+
+enum ReferralStatus {
+  ACTIVE
+  LEFT
+  POINTS_AWARDED
+  POINTS_REVOKED
+}
+
+model UserActivity {
+  id        Int       @id @default(autoincrement())
+  userId    BigInt    @map("user_id")
+  username  String?   @db.VarChar(255)
+  firstName String    @map("first_name") @db.VarChar(255)
+  lastName  String?   @map("last_name") @db.VarChar(255)
+  action    UserAction
+  chatId    BigInt    @map("chat_id")
+  chatTitle String    @map("chat_title") @db.VarChar(255)
+  metadata  Json?
+  timestamp DateTime  @default(now())
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId, chatId])
+  @@index([action, timestamp])
+  @@map("user_activities")
+}
+
+model ContestParticipant {
+  id                   Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  username             String?   @db.VarChar(255)
+  firstName            String    @map("first_name") @db.VarChar(255)
+  lastName             String?   @map("last_name") @db.VarChar(255)
+  chatId               BigInt    @map("chat_id")
+  points               Int       @default(0)
+  firstReferralPointAt DateTime? @map("first_referral_point_at")
+  tiktokTaskCompleted  Boolean   @default(false) @map("tiktok_task_completed")
+  tiktokLinks          String?   @map("tiktok_links") @db.VarChar(1000)
+  referralCode         String    @unique @map("referral_code") @db.VarChar(20)
+  referredBy           BigInt?   @map("referred_by")
+  referralCount        Int       @default(0) @map("referral_count")
+  isActive             Boolean   @default(true) @map("is_active")
+  joinedAt             DateTime  @default(now()) @map("joined_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, chatId])
+  @@index([referralCode])
+  @@index([referredBy])
+  @@index([points])
+  @@index([firstReferralPointAt])
+  @@index([joinedAt])
+  @@map("contest_participants")
+}
+
+model ContestReferral {
+  id              Int            @id @default(autoincrement())
+  referrerId      BigInt         @map("referrer_id")
+  referredUserId  BigInt         @map("referred_user_id")
+  chatId          BigInt         @map("chat_id")
+  status          ReferralStatus @default(ACTIVE)
+  pointsAwarded   Int           @default(2) @map("points_awarded")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  leftAt          DateTime?      @map("left_at")
+  metadata        Json?
+
+  @@index([referrerId, referredUserId])
+  @@index([status])
+  @@map("contest_referrals")
+}

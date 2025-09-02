@@ -1,0 +1,40 @@
+import { Context } from 'telegraf';
+import { JoinRequestHandler } from '../handlers/JoinRequestHandler';
+import { MemberLifecycleHandler } from '../handlers/MemberLifecycleHandler';
+import { CommandHandler } from '../handlers/CommandHandler';
+import { TikTokTaskHandler } from '../handlers/TikTokTaskHandler';
+import { AdminCommandHandler } from '../handlers/AdminCommandHandler';
+import { BotStatusHandler } from '../handlers/BotStatusHandler';
+import { ServiceContainer } from '../core/DIContainer';
+export declare class BotController {
+    private joinRequestHandler;
+    private memberLifecycleHandler;
+    private commandHandler;
+    private tikTokTaskHandler;
+    private adminCommandHandler;
+    private botStatusHandler;
+    constructor(services: ServiceContainer);
+    handleChatJoinRequest(ctx: Context): Promise<void>;
+    handleChatMemberUpdate(ctx: Context): Promise<void>;
+    handleLeftChatMember(ctx: Context): Promise<void>;
+    handleTiktokMessage(ctx: Context): Promise<void>;
+    handleTikTokCallback(ctx: Context): Promise<void>;
+    handleStartCommand(ctx: Context): Promise<void>;
+    handleClassificaCommand(ctx: Context): Promise<void>;
+    handleHelpCommand(ctx: Context): Promise<void>;
+    handleLinkCommand(ctx: Context): Promise<void>;
+    handleGenerateClassificaCommand(ctx: Context): Promise<void>;
+    handleHealthCommand(ctx: Context): Promise<void>;
+    handleStatsCommand(ctx: Context): Promise<void>;
+    handleCleanupCommand(ctx: Context): Promise<void>;
+    handleMyChatMember(ctx: Context): Promise<void>;
+    getJoinRequestHandler(): JoinRequestHandler;
+    getMemberLifecycleHandler(): MemberLifecycleHandler;
+    getCommandHandler(): CommandHandler;
+    getTikTokTaskHandler(): TikTokTaskHandler;
+    getAdminCommandHandler(): AdminCommandHandler;
+    getBotStatusHandler(): BotStatusHandler;
+    isHealthy(): Promise<boolean>;
+    shutdown(): Promise<void>;
+}
+//# sourceMappingURL=BotController.d.ts.map

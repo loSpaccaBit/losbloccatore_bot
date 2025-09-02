@@ -1,0 +1,60 @@
+import { ContestParticipant as PrismaContestParticipant } from '@prisma/client';
+export type ContestParticipantData = {
+    id?: number;
+    userId: bigint;
+    username?: string | undefined;
+    firstName: string;
+    lastName?: string | undefined;
+    chatId: bigint;
+    points?: number;
+    tiktokTaskCompleted?: boolean;
+    tiktokLinks?: string | undefined;
+    referralCode: string;
+    referredBy?: bigint | undefined;
+    referralCount?: number;
+    isActive?: boolean;
+    joinedAt?: Date;
+    updatedAt?: Date;
+};
+export declare class ContestParticipant {
+    id: number;
+    userId: bigint;
+    username?: string | undefined;
+    firstName: string;
+    lastName?: string | undefined;
+    chatId: bigint;
+    points: number;
+    tiktokTaskCompleted: boolean;
+    tiktokLinks?: string | undefined;
+    referralCode: string;
+    referredBy?: bigint | undefined;
+    referralCount: number;
+    isActive: boolean;
+    joinedAt: Date;
+    updatedAt: Date;
+    constructor(data: PrismaContestParticipant | ContestParticipantData);
+    get fullName(): string;
+    get displayName(): string;
+    get parsedTiktokLinks(): string[];
+    addTiktokLink(link: string): void;
+    toJSON(): {
+        id: number;
+        userId: number;
+        username: string | undefined;
+        firstName: string;
+        lastName: string | undefined;
+        fullName: string;
+        displayName: string;
+        chatId: number;
+        points: number;
+        tiktokTaskCompleted: boolean;
+        tiktokLinks: string[];
+        referralCode: string;
+        referredBy: number | undefined;
+        referralCount: number;
+        isActive: boolean;
+        joinedAt: Date;
+        updatedAt: Date;
+    };
+}
+//# sourceMappingURL=ContestParticipant.d.ts.map

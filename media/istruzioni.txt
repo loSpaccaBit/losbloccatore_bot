@@ -1,0 +1,11 @@
+# Istruzioni per il file immagine
+
+Aggiungi qui la tua immagine di benvenuto con il nome: `istruzioni.png`
+
+Formati supportati:
+- PNG
+- JPG/JPEG
+- GIF
+- WebP
+
+L'immagine verrà inviata automaticamente con il messaggio di benvenuto quando un utente si unisce al canale.

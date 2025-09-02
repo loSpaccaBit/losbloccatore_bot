@@ -1,0 +1,20 @@
+{
+    "keep": {
+        "days": false,
+        "amount": 14
+    },
+    "auditLog": "/Users/lospaccabit/Downloads/losbloccatore_bot/logs/.53ad53220557f4a7be47138bcda9ee6a2d603fa5-audit.json",
+    "files": [
+        {
+            "date": 1756552717657,
+            "name": "/Users/lospaccabit/Downloads/losbloccatore_bot/logs/error-2025-08-30.log",
+            "hash": "f5d6ad1da8a07e46ec0de3f8e6d4e8713d883bf2c29df0fc41819ec20a4a4eb6"
+        },
+        {
+            "date": 1756684443198,
+            "name": "/Users/lospaccabit/Downloads/losbloccatore_bot/logs/error-2025-09-01.log",
+            "hash": "fe4499bbe0813acf2281832ca254a148d99624961d40709900d2495de1538c4d"
+        }
+    ],
+    "hashType": "sha256"
+}
