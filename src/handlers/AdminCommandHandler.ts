@@ -1,7 +1,8 @@
 import { Context } from 'telegraf';
 import { UserActivityService } from '../services/UserActivityService';
 import { ContestService } from '../services/ContestService';
-import leaderboardScheduler from '../services/LeaderboardSchedulerService';
+import { LeaderboardImageService } from '../services/LeaderboardImageService';
+import { TelegramService } from '../services/TelegramService';
 import config from '../config';
 import logger from '../utils/logger';
 
@@ -10,10 +11,27 @@ import logger from '../utils/logger';
  * Restricted to authorized admin users only
  */
 export class AdminCommandHandler {
+  private leaderboardImageService: LeaderboardImageService | null = null;
+  private telegramService: TelegramService | null = null;
+
   constructor(
     private userActivityService: UserActivityService,
     private contestService: ContestService
   ) {}
+
+  private getLeaderboardImageService(): LeaderboardImageService {
+    if (!this.leaderboardImageService) {
+      this.leaderboardImageService = new LeaderboardImageService();
+    }
+    return this.leaderboardImageService;
+  }
+
+  private getTelegramService(): TelegramService {
+    if (!this.telegramService) {
+      this.telegramService = new TelegramService();
+    }
+    return this.telegramService;
+  }
 
   /**
    * Handle manual leaderboard generation command
@@ -34,13 +52,44 @@ export class AdminCommandHandler {
     try {
       await ctx.reply('🔄 Generando la classifica...');
       
-      // Trigger manual leaderboard generation
-      await leaderboardScheduler.sendLeaderboardNow();
+      // Generate leaderboard image for the requesting admin
+      const chatId = Number(config.channelId);
+      
+      // Generate the leaderboard image
+      const imagePath = await this.getLeaderboardImageService().generateLeaderboardImage(chatId);
+
+      // Get leaderboard data for the message text (top 5 only)
+      const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(chatId, 5);
+
+      // Create simple message text with top 5
+      let messageText: string;
+
+      if (leaderboardData.length === 0) {
+        messageText = `🏆 *CLASSIFICA TOP 5*\n\n🚫 Nessun partecipante`;
+      } else {
+        messageText = `🏆 *CLASSIFICA TOP 5*\n\n`;
+
+        const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+        leaderboardData.forEach((participant, index) => {
+          messageText += `${medals[index]} ${participant.username} - ${participant.points} punti\n`;
+        });
+      }
+
+      // Send the image with caption to the requesting admin
+      await this.getTelegramService().sendPhoto(
+        userId,
+        imagePath,
+        messageText
+      );
       
       await ctx.reply('✅ Classifica generata e inviata in privato!');
       
-      logger.info('Manual leaderboard generation triggered by admin', { 
-        adminUserId: userId 
+      logger.info('Manual leaderboard generation sent to requesting admin', { 
+        adminUserId: userId,
+        chatId,
+        participantCount: leaderboardData.length,
+        imagePath
       });
       
     } catch (error) {

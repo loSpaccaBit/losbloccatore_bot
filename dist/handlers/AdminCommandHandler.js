@@ -4,13 +4,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminCommandHandler = void 0;
-const LeaderboardSchedulerService_1 = __importDefault(require("../services/LeaderboardSchedulerService"));
+const LeaderboardImageService_1 = require("../services/LeaderboardImageService");
+const TelegramService_1 = require("../services/TelegramService");
 const config_1 = __importDefault(require("../config"));
 const logger_1 = __importDefault(require("../utils/logger"));
 class AdminCommandHandler {
     constructor(userActivityService, contestService) {
         this.userActivityService = userActivityService;
         this.contestService = contestService;
+        this.leaderboardImageService = null;
+        this.telegramService = null;
+    }
+    getLeaderboardImageService() {
+        if (!this.leaderboardImageService) {
+            this.leaderboardImageService = new LeaderboardImageService_1.LeaderboardImageService();
+        }
+        return this.leaderboardImageService;
+    }
+    getTelegramService() {
+        if (!this.telegramService) {
+            this.telegramService = new TelegramService_1.TelegramService();
+        }
+        return this.telegramService;
     }
     async handleGenerateClassificaCommand(ctx) {
         if (!('message' in ctx.update)) {
@@ -24,10 +39,27 @@ class AdminCommandHandler {
         }
         try {
             await ctx.reply('🔄 Generando la classifica...');
-            await LeaderboardSchedulerService_1.default.sendLeaderboardNow();
+            const chatId = Number(config_1.default.channelId);
+            const imagePath = await this.getLeaderboardImageService().generateLeaderboardImage(chatId);
+            const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(chatId, 5);
+            let messageText;
+            if (leaderboardData.length === 0) {
+                messageText = `🏆 *CLASSIFICA TOP 5*\n\n🚫 Nessun partecipante`;
+            }
+            else {
+                messageText = `🏆 *CLASSIFICA TOP 5*\n\n`;
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                leaderboardData.forEach((participant, index) => {
+                    messageText += `${medals[index]} ${participant.username} - ${participant.points} punti\n`;
+                });
+            }
+            await this.getTelegramService().sendPhoto(userId, imagePath, messageText);
             await ctx.reply('✅ Classifica generata e inviata in privato!');
-            logger_1.default.info('Manual leaderboard generation triggered by admin', {
-                adminUserId: userId
+            logger_1.default.info('Manual leaderboard generation sent to requesting admin', {
+                adminUserId: userId,
+                chatId,
+                participantCount: leaderboardData.length,
+                imagePath
             });
         }
         catch (error) {

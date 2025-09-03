@@ -4,7 +4,11 @@ import { ContestService } from '../services/ContestService';
 export declare class AdminCommandHandler {
     private userActivityService;
     private contestService;
+    private leaderboardImageService;
+    private telegramService;
     constructor(userActivityService: UserActivityService, contestService: ContestService);
+    private getLeaderboardImageService;
+    private getTelegramService;
     handleGenerateClassificaCommand(ctx: Context): Promise<void>;
     handleHealthCommand(ctx: Context): Promise<void>;
     handleStatsCommand(ctx: Context): Promise<void>;
