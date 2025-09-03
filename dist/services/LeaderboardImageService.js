@@ -48,9 +48,9 @@ class LeaderboardImageService {
             const positions = [
                 { x: 190, y: 450, maxWidth: 500 },
                 { x: 190, y: 580, maxWidth: 500 },
-                { x: 190, y: 185, maxWidth: 500 },
-                { x: 190, y: 230, maxWidth: 500 },
-                { x: 190, y: 275, maxWidth: 500 }
+                { x: 190, y: 710, maxWidth: 500 },
+                { x: 190, y: 840, maxWidth: 500 },
+                { x: 190, y: 970, maxWidth: 500 }
             ];
             this.applyTextStyle(ctx, LeaderboardImageService.MAIN_TEXT_CONFIG);
             const getDisplayName = (participant) => {

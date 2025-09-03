@@ -84,10 +84,10 @@ export class LeaderboardImageService {
       // Define improved positions for each rank closer to left edge
       const positions = [
         { x: 190, y: 450, maxWidth: 500 }, // 1st place - closer to left edge
-        { x: 190, y: 580, maxWidth: 500 }, // 2nd place  
-        { x: 190, y: 185, maxWidth: 500 }, // 3rd place
-        { x: 190, y: 230, maxWidth: 500 }, // 4th place
-        { x: 190, y: 275, maxWidth: 500 }  // 5th place
+        { x: 190, y: 580, maxWidth: 500 }, // 2nd place (580 = 450 + 130)
+        { x: 190, y: 710, maxWidth: 500 }, // 3rd place (710 = 580 + 130)
+        { x: 190, y: 840, maxWidth: 500 }, // 4th place (840 = 710 + 130)
+        { x: 190, y: 970, maxWidth: 500 }  // 5th place (970 = 840 + 130)
       ];
 
       // Apply main text styling configuration
