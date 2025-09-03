@@ -85,9 +85,9 @@ export class LeaderboardImageService {
       const positions = [
         { x: 190, y: 450, maxWidth: 500 }, // 1st place - closer to left edge
         { x: 190, y: 580, maxWidth: 500 }, // 2nd place  
-        { x: 190, y: 710, maxWidth: 500 }, // 3rd place
-        { x: 190, y: 840, maxWidth: 500 }, // 4th place
-        { x: 190, y: 970, maxWidth: 500 }  // 5th place
+        { x: 190, y: 185, maxWidth: 500 }, // 3rd place
+        { x: 190, y: 230, maxWidth: 500 }, // 4th place
+        { x: 190, y: 275, maxWidth: 500 }  // 5th place
       ];
 
       // Apply main text styling configuration
@@ -187,7 +187,7 @@ export class LeaderboardImageService {
 
       const getDisplayName = (participant: any): string => {
         if (participant.username) {
-          return `@${participant.username}`;
+          return participant.username; // No @ symbol to prevent mentions in text messages
         }
         if (participant.lastName) {
           return `${participant.firstName} ${participant.lastName}`;

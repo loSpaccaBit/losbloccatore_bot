@@ -126,7 +126,7 @@ class LeaderboardImageService {
             const participants = await this.getContestService().getLeaderboard(chatId, limit);
             const getDisplayName = (participant) => {
                 if (participant.username) {
-                    return `@${participant.username}`;
+                    return participant.username;
                 }
                 if (participant.lastName) {
                     return `${participant.firstName} ${participant.lastName}`;
