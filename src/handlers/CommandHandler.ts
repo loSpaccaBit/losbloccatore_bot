@@ -204,7 +204,7 @@ export class CommandHandler {
   }
 
   /**
-   * Send /start command response with contest info
+   * Send /start command response with contest info - same as join request behavior
    */
   private async sendStartCommandResponse(ctx: Context, participant: any, userId: number, userName: string): Promise<void> {
     // Generate referral link for this user
@@ -216,25 +216,47 @@ export class CommandHandler {
     // Get participant stats
     const channelId = parseInt(config.channelId);
     const stats = await this.contestService.getParticipantStats(userId, channelId);
-    const totalPoints = stats?.points || 0;
-
-    // Send welcome message with contest info using centralized template
-    try {
-      const messageContent = await messageService.loadMessage('contest_welcome', {
-        variables: {
-          userName,
-          totalPoints: totalPoints.toString(),
-          referralLink: finalUserReferralLink
-        }
+    
+    let welcomeSent = false;
+    
+    if (stats?.tiktokTaskCompleted) {
+      logger.info('User has already completed TikTok task - sending returning user welcome', {
+        userId,
+        userName,
+        totalPoints: stats.points
       });
+      
+      // Send welcome message for returning users (without TikTok buttons)
+      welcomeSent = await this.telegramService.sendWelcomeReturningUser(
+        userId,
+        userName,
+        stats.points,
+        finalUserReferralLink
+      );
+    } else {
+      logger.info('User has not completed TikTok task - sending TikTok welcome with buttons', {
+        userId,
+        userName
+      });
+      
+      // Send TikTok welcome message with photo, TikTok link and referral link
+      welcomeSent = await this.telegramService.sendWelcomeWithTikTok(
+        userId,
+        userName,
+        finalUserReferralLink
+      );
+    }
 
-      await ctx.reply(messageContent, { parse_mode: 'Markdown' });
-      logger.info('Contest welcome message sent successfully', { userId, userName });
-    } catch (error) {
-      logger.error('Failed to send contest welcome message', error as Error, { userId, userName });
+    if (!welcomeSent) {
+      logger.warn('Failed to send welcome message via TelegramService, sending fallback', {
+        userId,
+        userName,
+        reason: 'User might have privacy settings that block messages from bots'
+      });
+      
       // Fallback message
       await ctx.reply(
-        `🎯 Benvenuto ${userName}!\n\nPunti attuali: ${totalPoints}\nTuo link: ${finalUserReferralLink}\n\nUsa /classifica per vedere la tua posizione!`
+        `🎯 Benvenuto ${userName}!\n\nPunti attuali: ${stats?.points || 0}\nTuo link: ${finalUserReferralLink}\n\nUsa /classifica per vedere la tua posizione!`
       );
     }
   }

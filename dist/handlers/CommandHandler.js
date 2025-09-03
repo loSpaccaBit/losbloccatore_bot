@@ -139,21 +139,29 @@ class CommandHandler {
         const finalUserReferralLink = userReferralLink || `https://t.me/${(await ctx.telegram.getMe()).username}?start=${participant.referralCode}`;
         const channelId = parseInt(config_1.default.channelId);
         const stats = await this.contestService.getParticipantStats(userId, channelId);
-        const totalPoints = stats?.points || 0;
-        try {
-            const messageContent = await MessageService_1.default.loadMessage('contest_welcome', {
-                variables: {
-                    userName,
-                    totalPoints: totalPoints.toString(),
-                    referralLink: finalUserReferralLink
-                }
+        let welcomeSent = false;
+        if (stats?.tiktokTaskCompleted) {
+            logger_1.default.info('User has already completed TikTok task - sending returning user welcome', {
+                userId,
+                userName,
+                totalPoints: stats.points
             });
-            await ctx.reply(messageContent, { parse_mode: 'Markdown' });
-            logger_1.default.info('Contest welcome message sent successfully', { userId, userName });
+            welcomeSent = await this.telegramService.sendWelcomeReturningUser(userId, userName, stats.points, finalUserReferralLink);
         }
-        catch (error) {
-            logger_1.default.error('Failed to send contest welcome message', error, { userId, userName });
-            await ctx.reply(`🎯 Benvenuto ${userName}!\n\nPunti attuali: ${totalPoints}\nTuo link: ${finalUserReferralLink}\n\nUsa /classifica per vedere la tua posizione!`);
+        else {
+            logger_1.default.info('User has not completed TikTok task - sending TikTok welcome with buttons', {
+                userId,
+                userName
+            });
+            welcomeSent = await this.telegramService.sendWelcomeWithTikTok(userId, userName, finalUserReferralLink);
+        }
+        if (!welcomeSent) {
+            logger_1.default.warn('Failed to send welcome message via TelegramService, sending fallback', {
+                userId,
+                userName,
+                reason: 'User might have privacy settings that block messages from bots'
+            });
+            await ctx.reply(`🎯 Benvenuto ${userName}!\n\nPunti attuali: ${stats?.points || 0}\nTuo link: ${finalUserReferralLink}\n\nUsa /classifica per vedere la tua posizione!`);
         }
     }
     async sendPersonalStatistics(ctx, participant, _userId, _userName) {
