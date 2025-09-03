@@ -93,15 +93,15 @@ export class LeaderboardImageService {
       // Apply main text styling configuration
       this.applyTextStyle(ctx, LeaderboardImageService.MAIN_TEXT_CONFIG);
 
-      // Draw each participant's name and points
-      for (let i = 0; i < Math.min(topParticipants.length, 5); i++) {
-        const participant = topParticipants[i];
+      // Filter participants to only include those with usernames
+      const participantsWithUsernames = topParticipants.filter(p => p.username);
+
+      // Draw each participant's username and points
+      for (let i = 0; i < Math.min(participantsWithUsernames.length, 5); i++) {
+        const participant = participantsWithUsernames[i];
         const position = positions[i];
 
-        const displayName = participant.username
-          ? `@${participant.username}`
-          : participant.firstName;
-
+        const displayName = `@${participant.username}`;
         const text = displayName;
 
         // Truncate text if it's too long
@@ -116,6 +116,7 @@ export class LeaderboardImageService {
 
         logger.debug('Added participant to leaderboard image', {
           rank: i + 1,
+          username: participant.username,
           displayName,
           points: participant.points,
           x: position.x,
@@ -129,7 +130,9 @@ export class LeaderboardImageService {
 
       logger.info('Leaderboard image generated successfully', {
         chatId,
-        participantCount: topParticipants.length,
+        totalParticipants: topParticipants.length,
+        participantsWithUsernames: participantsWithUsernames.length,
+        participantCount: participantsWithUsernames.length,
         outputPath: this.outputPath
       });
 
@@ -171,11 +174,11 @@ export class LeaderboardImageService {
   async getLeaderboardData(chatId: number, limit: number = 5): Promise<LeaderboardPosition[]> {
     try {
       const participants = await this.getContestService().getLeaderboard(chatId, limit);
-      return participants.map((participant, index) => ({
+      // Filter to only include participants with usernames
+      const participantsWithUsernames = participants.filter(p => p.username);
+      return participantsWithUsernames.slice(0, limit).map((participant, index) => ({
         rank: index + 1,
-        username: participant.username
-          ? `@${participant.username}`
-          : participant.firstName,
+        username: `@${participant.username}`,
         points: participant.points
       }));
     } catch (error) {

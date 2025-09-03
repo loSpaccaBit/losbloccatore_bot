@@ -53,12 +53,11 @@ class LeaderboardImageService {
                 { x: 190, y: 275, maxWidth: 500 }
             ];
             this.applyTextStyle(ctx, LeaderboardImageService.MAIN_TEXT_CONFIG);
-            for (let i = 0; i < Math.min(topParticipants.length, 5); i++) {
-                const participant = topParticipants[i];
+            const participantsWithUsernames = topParticipants.filter(p => p.username);
+            for (let i = 0; i < Math.min(participantsWithUsernames.length, 5); i++) {
+                const participant = participantsWithUsernames[i];
                 const position = positions[i];
-                const displayName = participant.username
-                    ? `@${participant.username}`
-                    : participant.firstName;
+                const displayName = `@${participant.username}`;
                 const text = displayName;
                 const truncatedText = this.truncateText(ctx, text, position.maxWidth);
                 const textX = position.x;
@@ -67,6 +66,7 @@ class LeaderboardImageService {
                 ctx.fillText(truncatedText, textX, textY);
                 logger_1.default.debug('Added participant to leaderboard image', {
                     rank: i + 1,
+                    username: participant.username,
                     displayName,
                     points: participant.points,
                     x: position.x,
@@ -77,7 +77,9 @@ class LeaderboardImageService {
             fs_1.default.writeFileSync(this.outputPath, buffer);
             logger_1.default.info('Leaderboard image generated successfully', {
                 chatId,
-                participantCount: topParticipants.length,
+                totalParticipants: topParticipants.length,
+                participantsWithUsernames: participantsWithUsernames.length,
+                participantCount: participantsWithUsernames.length,
                 outputPath: this.outputPath
             });
             return this.outputPath;
@@ -112,11 +114,10 @@ class LeaderboardImageService {
     async getLeaderboardData(chatId, limit = 5) {
         try {
             const participants = await this.getContestService().getLeaderboard(chatId, limit);
-            return participants.map((participant, index) => ({
+            const participantsWithUsernames = participants.filter(p => p.username);
+            return participantsWithUsernames.slice(0, limit).map((participant, index) => ({
                 rank: index + 1,
-                username: participant.username
-                    ? `@${participant.username}`
-                    : participant.firstName,
+                username: `@${participant.username}`,
                 points: participant.points
             }));
         }
