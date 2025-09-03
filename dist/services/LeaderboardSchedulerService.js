@@ -46,9 +46,11 @@ class LeaderboardSchedulerService {
     constructor(chatId, cronExpression) {
         this.isRunning = false;
         this.scheduledTask = null;
+        this.adminUserId = null;
         this.telegramService = null;
         this.leaderboardImageService = null;
         this.chatId = chatId || Number(config_1.default.channelId);
+        this.adminUserId = config_1.default.adminUserId ? Number(config_1.default.adminUserId) : null;
         this.cronExpression = cronExpression || '0 * * * *';
     }
     getTelegramService() {
@@ -68,18 +70,35 @@ class LeaderboardSchedulerService {
             logger_1.default.warn('Leaderboard scheduler is already running');
             return;
         }
+        if (!this.adminUserId) {
+            logger_1.default.error('Cannot start leaderboard scheduler: ADMIN_USER_ID not configured');
+            return;
+        }
         logger_1.default.info('Starting leaderboard scheduler', {
             chatId: this.chatId,
+            adminUserId: this.adminUserId,
             cronExpression: this.cronExpression,
             timezone: 'Europe/Rome'
         });
-        this.scheduledTask = cron.schedule(this.cronExpression, async () => {
-            await this.generateAndSendLeaderboard();
-        }, {
-            timezone: 'Europe/Rome'
-        });
-        this.isRunning = true;
-        logger_1.default.info('Leaderboard scheduler started successfully');
+        if (!cron.validate(this.cronExpression)) {
+            logger_1.default.error('Invalid cron expression', { cronExpression: this.cronExpression });
+            return;
+        }
+        try {
+            this.scheduledTask = cron.schedule(this.cronExpression, async () => {
+                logger_1.default.info('Cron job triggered - generating leaderboard');
+                await this.generateAndSendLeaderboard();
+            }, {
+                timezone: 'Europe/Rome'
+            });
+            this.isRunning = true;
+            logger_1.default.info('Leaderboard scheduler started successfully', {
+                nextRun: this.scheduledTask ? 'scheduled' : 'unknown'
+            });
+        }
+        catch (error) {
+            logger_1.default.error('Failed to start leaderboard scheduler', error);
+        }
     }
     stop() {
         if (!this.isRunning || !this.scheduledTask) {
@@ -93,40 +112,58 @@ class LeaderboardSchedulerService {
     }
     async generateAndSendLeaderboard() {
         try {
-            logger_1.default.info('Generating and sending scheduled leaderboard', { chatId: this.chatId });
+            if (!this.adminUserId) {
+                logger_1.default.error('Cannot send leaderboard: admin user ID not configured');
+                return;
+            }
+            logger_1.default.info('Generating and sending scheduled leaderboard to admin', {
+                chatId: this.chatId,
+                adminUserId: this.adminUserId
+            });
             const dbChatId = this.chatId;
             const imagePath = await this.getLeaderboardImageService().generateLeaderboardImage(dbChatId);
-            const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(dbChatId, 5);
+            const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(dbChatId, 10);
             let messageText;
+            const currentTime = new Date().toLocaleString('it-IT', {
+                timeZone: 'Europe/Rome',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             if (leaderboardData.length === 0) {
-                messageText = '🏆 **CLASSIFICA** 🏆\n\n' +
-                    '🚀 Sii il primo a partecipare!\n' +
-                    '💫 Unisciti al canale e inizia a guadagnare punti!\n\n' +
-                    '🎯 Come partecipare:\n' +
-                    '• Visita il nostro TikTok per 3 punti\n' +
-                    '• Invita amici per 2 punti ciascuno\n\n' +
-                    '💪 La competizione ti aspetta!';
+                messageText = `🏆 **CLASSIFICA CONTEST** 🏆\n\n` +
+                    `📅 Aggiornamento: ${currentTime}\n\n` +
+                    `🚫 Nessun partecipante al momento\n\n` +
+                    `💡 **Come partecipano gli utenti:**\n` +
+                    `• Visita TikTok: 3 punti (solo 1 volta)\n` +
+                    `• Invita amici: 2 punti per amico\n\n` +
+                    `📊 **Canale:** ${config_1.default.channelId}`;
             }
             else {
-                messageText = '🏆 **CLASSIFICA AGGIORNATA** 🏆\n\n';
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+                messageText = `🏆 **CLASSIFICA CONTEST** 🏆\n\n` +
+                    `📅 Aggiornamento: ${currentTime}\n` +
+                    `👥 Partecipanti: ${leaderboardData.length}\n\n`;
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
                 leaderboardData.forEach((participant, index) => {
                     const medal = medals[index] || `${index + 1}️⃣`;
                     messageText += `${medal} **${participant.username}** - ${participant.points} punti\n`;
                 });
-                messageText += '\n💪 Continua a partecipare per scalare la classifica!';
+                messageText += `\n📊 **Canale:** ${config_1.default.channelId}`;
             }
-            await this.getTelegramService().sendPhoto(this.chatId, imagePath, messageText);
-            logger_1.default.info('Scheduled leaderboard sent successfully', {
-                chatId: this.chatId,
+            await this.getTelegramService().sendPhoto(this.adminUserId, imagePath, messageText);
+            logger_1.default.info('Scheduled leaderboard sent to admin successfully', {
+                adminUserId: this.adminUserId,
                 dbChatId,
                 participantCount: leaderboardData.length,
                 imagePath
             });
         }
         catch (error) {
-            logger_1.default.error('Failed to generate and send scheduled leaderboard', error, {
-                chatId: this.chatId
+            logger_1.default.error('Failed to generate and send scheduled leaderboard to admin', error, {
+                chatId: this.chatId,
+                adminUserId: this.adminUserId
             });
         }
     }
@@ -156,11 +193,29 @@ class LeaderboardSchedulerService {
         return {
             isRunning: this.isRunning,
             chatId: this.chatId,
-            cronExpression: this.cronExpression
+            cronExpression: this.cronExpression,
+            adminUserId: this.adminUserId
         };
     }
     isActive() {
         return this.isRunning;
+    }
+    startTestSchedule() {
+        logger_1.default.info('Starting test cron job (every minute for 5 minutes)');
+        let testCount = 0;
+        const maxTests = 5;
+        const testTask = cron.schedule('* * * * *', () => {
+            testCount++;
+            logger_1.default.info(`Test cron job executed ${testCount}/${maxTests}`, {
+                timestamp: new Date().toISOString()
+            });
+            if (testCount >= maxTests) {
+                testTask.stop();
+                logger_1.default.info('Test cron job completed - node-cron is working!');
+            }
+        }, {
+            timezone: 'Europe/Rome'
+        });
     }
 }
 exports.LeaderboardSchedulerService = LeaderboardSchedulerService;

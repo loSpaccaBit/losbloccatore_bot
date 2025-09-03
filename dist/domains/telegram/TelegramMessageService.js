@@ -57,8 +57,15 @@ class TelegramMessageService {
                     }
                 });
                 const welcomeTimestamp = Date.now();
-                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800);
-                logger_1.default.info('Welcome message with photo sent successfully', { userId, userName, welcomeTimestamp });
+                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 3600);
+                const verifyCache = cache_1.default.get(`welcome_sent:${userId}`);
+                logger_1.default.info('Welcome message with photo sent successfully', {
+                    userId,
+                    userName,
+                    welcomeTimestamp,
+                    cacheSet: !!verifyCache,
+                    cacheValue: verifyCache
+                });
                 return true;
             }
             catch (photoError) {
@@ -82,8 +89,15 @@ class TelegramMessageService {
                     }
                 });
                 const welcomeTimestamp = Date.now();
-                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800);
-                logger_1.default.info('Welcome text message sent successfully', { userId, userName, welcomeTimestamp });
+                cache_1.default.set(`welcome_sent:${userId}`, welcomeTimestamp, 3600);
+                const verifyCache = cache_1.default.get(`welcome_sent:${userId}`);
+                logger_1.default.info('Welcome text message sent successfully', {
+                    userId,
+                    userName,
+                    welcomeTimestamp,
+                    cacheSet: !!verifyCache,
+                    cacheValue: verifyCache
+                });
                 return true;
             }
         }

@@ -79,7 +79,14 @@ class TikTokTaskHandler {
             currentTime: Date.now(),
             timeSinceWelcome: welcomeTime ? Date.now() - welcomeTime : 'no_welcome_time'
         });
-        if (!welcomeTime || Date.now() - welcomeTime < 30000) {
+        if (!welcomeTime) {
+            logger_1.default.warn('No welcome timestamp found - skipping timing validation in production', {
+                userId,
+                note: 'This is a fallback for production cache issues'
+            });
+            return true;
+        }
+        if (Date.now() - welcomeTime < 30000) {
             const waitMessage = await MessageService_1.default.loadMessage('tiktok_wait_required')
                 .catch(() => '⚠️ Devi prima cliccare "Apri TikTok", visitare la pagina e seguire/commentare! Attendi almeno 30 secondi.');
             await ctx.answerCbQuery(waitMessage, { show_alert: true });
@@ -87,7 +94,7 @@ class TikTokTaskHandler {
                 userId,
                 welcomeTime,
                 currentTime: Date.now(),
-                timeSinceWelcome: welcomeTime ? Date.now() - welcomeTime : 'no_welcome_time'
+                timeSinceWelcome: Date.now() - welcomeTime
             });
             return false;
         }

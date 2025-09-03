@@ -1,0 +1,4 @@
+{"environment":"development","level":"info","message":"Starting test cron job (every minute for 5 minutes)","service":"losbloccatore-bot","timestamp":"2025-09-03 16:47:39"}
+{"environment":"development","level":"info","message":"Test cron job executed 1/5","service":"losbloccatore-bot","timestamp":"2025-09-03 16:48:00"}
+{"environment":"development","level":"info","message":"Test cron job executed 2/5","service":"losbloccatore-bot","timestamp":"2025-09-03 16:49:00"}
+{"environment":"development","level":"info","message":"Test cron job executed 3/5","service":"losbloccatore-bot","timestamp":"2025-09-03 16:50:00"}

@@ -87,9 +87,17 @@ export class TelegramMessageService {
 
         // Cache welcome message timestamp for TikTok timing validation
         const welcomeTimestamp = Date.now();
-        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800); // 30 minutes TTL
-
-        logger.info('Welcome message with photo sent successfully', { userId, userName, welcomeTimestamp });
+        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 3600); // 60 minutes TTL
+        
+        // Verify cache was set correctly
+        const verifyCache = cache.get(`welcome_sent:${userId}`);
+        logger.info('Welcome message with photo sent successfully', { 
+          userId, 
+          userName, 
+          welcomeTimestamp,
+          cacheSet: !!verifyCache,
+          cacheValue: verifyCache
+        });
         return true;
 
       } catch (photoError) {
@@ -117,9 +125,17 @@ export class TelegramMessageService {
 
         // Cache welcome message timestamp for TikTok timing validation
         const welcomeTimestamp = Date.now();
-        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 1800); // 30 minutes TTL
-
-        logger.info('Welcome text message sent successfully', { userId, userName, welcomeTimestamp });
+        cache.set(`welcome_sent:${userId}`, welcomeTimestamp, 3600); // 60 minutes TTL
+        
+        // Verify cache was set correctly
+        const verifyCache = cache.get(`welcome_sent:${userId}`);
+        logger.info('Welcome text message sent successfully', { 
+          userId, 
+          userName, 
+          welcomeTimestamp,
+          cacheSet: !!verifyCache,
+          cacheValue: verifyCache
+        });
         return true;
       }
 

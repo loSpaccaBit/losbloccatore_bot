@@ -2,6 +2,7 @@ export declare class LeaderboardSchedulerService {
     private isRunning;
     private scheduledTask;
     private chatId;
+    private adminUserId;
     private cronExpression;
     private telegramService;
     private leaderboardImageService;
@@ -18,8 +19,10 @@ export declare class LeaderboardSchedulerService {
         isRunning: boolean;
         chatId: number;
         cronExpression: string;
+        adminUserId: number | null;
     };
     isActive(): boolean;
+    startTestSchedule(): void;
 }
 declare const _default: LeaderboardSchedulerService;
 export default _default;
