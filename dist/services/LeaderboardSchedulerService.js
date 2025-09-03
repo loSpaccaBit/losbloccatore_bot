@@ -49,7 +49,7 @@ class LeaderboardSchedulerService {
         this.telegramService = null;
         this.leaderboardImageService = null;
         this.chatId = chatId || Number(config_1.default.channelId);
-        this.cronExpression = cronExpression || '0 18 * * *';
+        this.cronExpression = cronExpression || '0 * * * *';
     }
     getTelegramService() {
         if (!this.telegramService) {
