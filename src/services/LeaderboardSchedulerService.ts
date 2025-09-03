@@ -110,42 +110,22 @@ export class LeaderboardSchedulerService {
       // Generate the leaderboard image
       const imagePath = await this.getLeaderboardImageService().generateLeaderboardImage(dbChatId);
 
-      // Get leaderboard data for the message text
-      const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(dbChatId, 10);
+      // Get leaderboard data for the message text (top 5 only)
+      const leaderboardData = await this.getLeaderboardImageService().getLeaderboardData(dbChatId, 5);
 
-      // Create message text with current standings
+      // Create simple message text with top 5
       let messageText: string;
 
-      const currentTime = new Date().toLocaleString('it-IT', {
-        timeZone: 'Europe/Rome',
-        day: '2-digit',
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-
       if (leaderboardData.length === 0) {
-        messageText = `🏆 **CLASSIFICA CONTEST** 🏆\n\n` +
-          `📅 Aggiornamento: ${currentTime}\n\n` +
-          `🚫 Nessun partecipante al momento\n\n` +
-          `💡 **Come partecipano gli utenti:**\n` +
-          `• Visita TikTok: 3 punti (solo 1 volta)\n` +
-          `• Invita amici: 2 punti per amico\n\n` +
-          `📊 **Canale:** ${config.channelId}`;
+        messageText = `🏆 *CLASSIFICA TOP 5*\n\n🚫 Nessun partecipante`;
       } else {
-        messageText = `🏆 **CLASSIFICA CONTEST** 🏆\n\n` +
-          `📅 Aggiornamento: ${currentTime}\n` +
-          `👥 Partecipanti: ${leaderboardData.length}\n\n`;
+        messageText = `🏆 *CLASSIFICA TOP 5*\n\n`;
 
-        const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+        const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 
         leaderboardData.forEach((participant, index) => {
-          const medal = medals[index] || `${index + 1}️⃣`;
-          messageText += `${medal} **${participant.username}** - ${participant.points} punti\n`;
+          messageText += `${medals[index]} ${participant.username} - ${participant.points} punti\n`;
         });
-
-        messageText += `\n📊 **Canale:** ${config.channelId}`;
       }
 
       // Send the image with caption to admin privately

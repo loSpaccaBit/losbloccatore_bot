@@ -85,23 +85,34 @@ export class LeaderboardImageService {
       const positions = [
         { x: 190, y: 450, maxWidth: 500 }, // 1st place - closer to left edge
         { x: 190, y: 580, maxWidth: 500 }, // 2nd place  
-        { x: 190, y: 185, maxWidth: 500 }, // 3rd place
-        { x: 190, y: 230, maxWidth: 500 }, // 4th place
-        { x: 190, y: 275, maxWidth: 500 }  // 5th place
+        { x: 190, y: 710, maxWidth: 500 }, // 3rd place
+        { x: 190, y: 840, maxWidth: 500 }, // 4th place
+        { x: 190, y: 970, maxWidth: 500 }  // 5th place
       ];
 
       // Apply main text styling configuration
       this.applyTextStyle(ctx, LeaderboardImageService.MAIN_TEXT_CONFIG);
 
-      // Filter participants to only include those with usernames
-      const participantsWithUsernames = topParticipants.filter(p => p.username);
+      // Create display names with priority: username > fullName > firstName > fallback
+      const getDisplayName = (participant: any): string => {
+        if (participant.username) {
+          return `@${participant.username}`;
+        }
+        if (participant.lastName) {
+          return `${participant.firstName} ${participant.lastName}`;
+        }
+        if (participant.firstName) {
+          return participant.firstName;
+        }
+        return `Utente #${participant.userId}`;
+      };
 
-      // Draw each participant's username and points
-      for (let i = 0; i < Math.min(participantsWithUsernames.length, 5); i++) {
-        const participant = participantsWithUsernames[i];
+      // Draw each participant's name and points
+      for (let i = 0; i < Math.min(topParticipants.length, 5); i++) {
+        const participant = topParticipants[i];
         const position = positions[i];
 
-        const displayName = `@${participant.username}`;
+        const displayName = getDisplayName(participant);
         const text = displayName;
 
         // Truncate text if it's too long
@@ -116,7 +127,8 @@ export class LeaderboardImageService {
 
         logger.debug('Added participant to leaderboard image', {
           rank: i + 1,
-          username: participant.username,
+          userId: participant.userId,
+          username: participant.username || null,
           displayName,
           points: participant.points,
           x: position.x,
@@ -130,9 +142,7 @@ export class LeaderboardImageService {
 
       logger.info('Leaderboard image generated successfully', {
         chatId,
-        totalParticipants: topParticipants.length,
-        participantsWithUsernames: participantsWithUsernames.length,
-        participantCount: participantsWithUsernames.length,
+        participantCount: topParticipants.length,
         outputPath: this.outputPath
       });
 
@@ -174,11 +184,23 @@ export class LeaderboardImageService {
   async getLeaderboardData(chatId: number, limit: number = 5): Promise<LeaderboardPosition[]> {
     try {
       const participants = await this.getContestService().getLeaderboard(chatId, limit);
-      // Filter to only include participants with usernames
-      const participantsWithUsernames = participants.filter(p => p.username);
-      return participantsWithUsernames.slice(0, limit).map((participant, index) => ({
+
+      const getDisplayName = (participant: any): string => {
+        if (participant.username) {
+          return `@${participant.username}`;
+        }
+        if (participant.lastName) {
+          return `${participant.firstName} ${participant.lastName}`;
+        }
+        if (participant.firstName) {
+          return participant.firstName;
+        }
+        return `Utente #${participant.userId}`;
+      };
+
+      return participants.slice(0, limit).map((participant, index) => ({
         rank: index + 1,
-        username: `@${participant.username}`,
+        username: getDisplayName(participant),
         points: participant.points
       }));
     } catch (error) {
