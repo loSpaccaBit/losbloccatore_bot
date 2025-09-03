@@ -1,27 +1,32 @@
 🎯 **PUNTI GUADAGNATI!**
 
-Complimenti {{userName}}! 🎉
+Perfetto {{userName}}! 🎉
 
-✅ **Hai guadagnato 3 punti** per aver cliccato il link TikTok!
+✅ **Hai completato il TASK TIKTOK: +3 punti!**
 
 📊 **I tuoi punti attuali: {{totalPoints}}**
+
+---
+
+🎊 **TASK TIKTOK COMPLETATO!**
+Hai già completato il task TikTok e non puoi rifarlo. Adesso concentrati sugli inviti!
 
 ---
 
 🔗 **Il tuo link di invito personale:**
 {{referralLink}}
 
-💡 **Come guadagnare altri punti:**
+👥 **CONTINUA A GUADAGNARE CON GLI INVITI:**
 
-**TASK 2: Invita Amici (2 punti per amico)**
-• Condividi il tuo link personale
-• Per ogni amico che si unisce = **2 punti**
-• ⚠️ Se un amico lascia il canale, perdi i punti
+• **Condividi questo link** con i tuoi amici
+• **Ogni amico che entra** = **+2 punti**
+• **Se un amico esce** = **-2 punti**  
+• **Se rientra più tardi** = **+2 punti** di nuovo!
 
-**TASK 3: Più click TikTok**
-• Ogni nuovo click su TikTok = **3 punti**
-• Condividi il nostro TikTok con gli amici!
+💡 **SUGGERIMENTO**: Condividi il link su WhatsApp, Instagram, ovunque!
 
 ---
 
-🏆 **Continua così e vinci premi fantastici!**
+📈 Usa **/classifica** per vedere la tua posizione!
+
+🏆 **Continua così e scala la classifica!**

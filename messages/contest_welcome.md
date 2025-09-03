@@ -1,26 +1,32 @@
-🎯 **Benvenuto nel Contest TikTok!** 🎯
+🎯 **CONTEST LOSBLOCCATORE** 🎯
 
-Ciao {{userName}}! Sei pronto a guadagnare punti? 🚀
+Ciao {{userName}}! 👋 Ecco il tuo stato attuale:
 
-📊 **I tuoi punti attuali: {{totalPoints}}**
+📊 **Punti attuali: {{totalPoints}}**
 
-🔗 **Il tuo link di invito:**
+🔗 **Il tuo link personale di invito:**
 {{referralLink}}
-
-💡 **Come guadagnare punti:**
-
-**TASK 1: Visita TikTok (3 punti)**
-• Usa i bottoni nel messaggio di benvenuto
-• Clicca "Apri TikTok" → Visita la pagina
-• Clicca "Ho visitato TikTok" → Ricevi 3 punti!
-
-**TASK 2: Invita Amici (2 punti)**
-• Condividi il tuo link sopra
-• Ricevi 2 punti per ogni amico che si unisce
-• ⚠️ Perdi i punti se l'amico lascia il canale
 
 ---
 
-📈 Usa **/classifica** per vedere la tua posizione!
+💡 **COME GUADAGNARE PUNTI:**
 
-🏆 **Inizia subito - visita il nostro TikTok usando i bottoni di benvenuto!**
+📱 **TASK TIKTOK** (3 punti - solo 1 volta)
+• Ricevi l'immagine di benvenuto con i bottoni
+• Clicca "🎵 Apri TikTok" → Visita la pagina
+• **Resta almeno 30 secondi** nella pagina TikTok
+• Clicca "✅ Ho visitato TikTok" → **+3 punti!**
+• ⚠️ **Questo task si può fare solo UNA volta**
+
+👥 **INVITA AMICI** (2 punti per amico)
+• Condividi il tuo link personale qui sopra
+• Ogni nuovo amico che entra = **+2 punti**
+• Se l'amico lascia il canale = **-2 punti**
+• Se l'amico rientra = **+2 punti** di nuovo!
+
+---
+
+📈 Usa **/classifica** per vedere la classifica completa!
+🔗 Usa **/link** per rivedere il tuo link personale!
+
+🏆 **Buona fortuna nel contest!**
