@@ -8,8 +8,9 @@ const LeaderboardSchedulerService_1 = __importDefault(require("../services/Leade
 const config_1 = __importDefault(require("../config"));
 const logger_1 = __importDefault(require("../utils/logger"));
 class AdminCommandHandler {
-    constructor(userActivityService) {
+    constructor(userActivityService, contestService) {
         this.userActivityService = userActivityService;
+        this.contestService = contestService;
     }
     async handleGenerateClassificaCommand(ctx) {
         if (!('message' in ctx.update)) {
@@ -73,6 +74,26 @@ class AdminCommandHandler {
             await this.handleAdminCommandError(ctx, error, 'stats', userId);
         }
     }
+    async handleContestCommand(ctx) {
+        if (!('message' in ctx.update)) {
+            return;
+        }
+        const message = ctx.update.message;
+        const userId = message.from?.id;
+        if (!userId || !this.isAdmin(userId)) {
+            await ctx.reply('❌ Comando disponibile solo per gli amministratori.');
+            return;
+        }
+        try {
+            const contestStats = await this.getContestStats();
+            const contestMessage = this.formatContestMessage(contestStats);
+            await ctx.reply(contestMessage, { parse_mode: 'Markdown' });
+            logger_1.default.info('Contest stats requested by admin', { adminUserId: userId });
+        }
+        catch (error) {
+            await this.handleAdminCommandError(ctx, error, 'contest', userId);
+        }
+    }
     async handleCleanupCommand(ctx) {
         if (!('message' in ctx.update)) {
             return;
@@ -95,6 +116,68 @@ class AdminCommandHandler {
         }
         catch (error) {
             await this.handleAdminCommandError(ctx, error, 'cleanup', userId);
+        }
+    }
+    async getContestStats() {
+        try {
+            const chatId = Number(config_1.default.channelId);
+            const allParticipants = await this.contestService['prisma'].contestParticipant.findMany({
+                where: {
+                    chatId: BigInt(chatId),
+                    isActive: true
+                }
+            });
+            const inactiveParticipants = await this.contestService['prisma'].contestParticipant.count({
+                where: {
+                    chatId: BigInt(chatId),
+                    isActive: false
+                }
+            });
+            const totalActiveParticipants = allParticipants.length;
+            const participantsWithPoints = allParticipants.filter(p => p.points > 0).length;
+            const participantsWithReferrals = allParticipants.filter(p => p.referralCount > 0).length;
+            const tiktokTasksCompleted = allParticipants.filter(p => p.tiktokTaskCompleted).length;
+            const totalPoints = allParticipants.reduce((sum, p) => sum + p.points, 0);
+            const averagePoints = totalActiveParticipants > 0 ? Math.round(totalPoints / totalActiveParticipants * 100) / 100 : 0;
+            const totalReferrals = await this.contestService['prisma'].contestReferral.count({
+                where: {
+                    chatId: BigInt(chatId)
+                }
+            });
+            const activeReferrals = await this.contestService['prisma'].contestReferral.count({
+                where: {
+                    chatId: BigInt(chatId),
+                    status: 'ACTIVE'
+                }
+            });
+            const topParticipants = await this.contestService.getLeaderboard(chatId, 5);
+            const yesterday = new Date();
+            yesterday.setHours(yesterday.getHours() - 24);
+            const recentParticipants = await this.contestService['prisma'].contestParticipant.count({
+                where: {
+                    chatId: BigInt(chatId),
+                    joinedAt: {
+                        gte: yesterday
+                    }
+                }
+            });
+            return {
+                totalActiveParticipants,
+                inactiveParticipants,
+                participantsWithPoints,
+                participantsWithReferrals,
+                tiktokTasksCompleted,
+                totalPoints,
+                averagePoints,
+                totalReferrals,
+                activeReferrals,
+                topParticipants,
+                recentParticipants,
+                timestamp: new Date().toISOString()
+            };
+        }
+        catch (error) {
+            throw new Error(`Failed to gather contest stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
     async getSystemHealthInfo() {
@@ -207,6 +290,35 @@ class AdminCommandHandler {
         return `🗑️ **Records Deleted**: ${results.deletedActivityRecords}\n` +
             `📅 **Cutoff Date**: ${new Date(results.cleanupDate).toLocaleDateString()}\n` +
             `⏰ **Completed**: ${new Date(results.timestamp).toLocaleString()}`;
+    }
+    formatContestMessage(stats) {
+        let message = `🏆 *Contest Statistics*\n\n`;
+        message += `👥 **Participants:**\n`;
+        message += `• Active: ${stats.totalActiveParticipants}\n`;
+        message += `• Inactive: ${stats.inactiveParticipants}\n`;
+        message += `• Recent (24h): ${stats.recentParticipants}\n`;
+        message += `• With Points: ${stats.participantsWithPoints}\n\n`;
+        message += `🎯 **Points:**\n`;
+        message += `• Total Points: ${stats.totalPoints}\n`;
+        message += `• Average Points: ${stats.averagePoints}\n\n`;
+        message += `📱 **Tasks:**\n`;
+        message += `• TikTok Completed: ${stats.tiktokTasksCompleted}/${stats.totalActiveParticipants}\n`;
+        message += `• Completion Rate: ${stats.totalActiveParticipants > 0 ? Math.round(stats.tiktokTasksCompleted / stats.totalActiveParticipants * 100) : 0}%\n\n`;
+        message += `🤝 **Referrals:**\n`;
+        message += `• Users with Referrals: ${stats.participantsWithReferrals}\n`;
+        message += `• Total Referral Links: ${stats.totalReferrals}\n`;
+        message += `• Active Referrals: ${stats.activeReferrals}\n\n`;
+        if (stats.topParticipants && stats.topParticipants.length > 0) {
+            message += `🥇 **Top 5 Participants:**\n`;
+            stats.topParticipants.forEach((participant, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                const name = participant.firstName + (participant.lastName ? ` ${participant.lastName}` : '');
+                message += `${medal} ${name} - ${participant.points} punti\n`;
+            });
+            message += `\n`;
+        }
+        message += `📅 Generated: ${new Date(stats.timestamp).toLocaleString()}`;
+        return message;
     }
     isAdmin(userId) {
         return config_1.default.adminUserId !== undefined && config_1.default.adminUserId === userId;

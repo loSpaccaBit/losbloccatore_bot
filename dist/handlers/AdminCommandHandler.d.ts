@@ -1,12 +1,16 @@
 import { Context } from 'telegraf';
 import { UserActivityService } from '../services/UserActivityService';
+import { ContestService } from '../services/ContestService';
 export declare class AdminCommandHandler {
     private userActivityService;
-    constructor(userActivityService: UserActivityService);
+    private contestService;
+    constructor(userActivityService: UserActivityService, contestService: ContestService);
     handleGenerateClassificaCommand(ctx: Context): Promise<void>;
     handleHealthCommand(ctx: Context): Promise<void>;
     handleStatsCommand(ctx: Context): Promise<void>;
+    handleContestCommand(ctx: Context): Promise<void>;
     handleCleanupCommand(ctx: Context): Promise<void>;
+    private getContestStats;
     private getSystemHealthInfo;
     private testDatabaseConnection;
     private getSystemStats;
@@ -14,6 +18,7 @@ export declare class AdminCommandHandler {
     private formatHealthMessage;
     private formatStatsMessage;
     private formatCleanupResults;
+    private formatContestMessage;
     private isAdmin;
     private handleAdminCommandError;
 }

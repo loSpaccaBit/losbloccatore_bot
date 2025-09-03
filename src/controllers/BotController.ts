@@ -46,7 +46,8 @@ export class BotController {
     );
 
     this.adminCommandHandler = new AdminCommandHandler(
-      services.userActivityService
+      services.userActivityService,
+      services.contestService
     );
 
     this.botStatusHandler = new BotStatusHandler();
@@ -194,6 +195,17 @@ export class BotController {
       await this.adminCommandHandler.handleCleanupCommand(ctx);
     } catch (error) {
       logger.error('Error in cleanup command handling', error as Error);
+    }
+  }
+
+  /**
+   * Handle admin contest command - delegate to AdminCommandHandler
+   */
+  async handleContestCommand(ctx: Context): Promise<void> {
+    try {
+      await this.adminCommandHandler.handleContestCommand(ctx);
+    } catch (error) {
+      logger.error('Error in contest command handling', error as Error);
     }
   }
 

@@ -168,6 +168,34 @@ class Application {
       }
     });
 
+    // Admin command to view contest statistics
+    bot.command('contest', async (ctx: any) => {
+      if (this.botController) {
+        await this.botController.handleContestCommand(ctx);
+      }
+    });
+
+    // Admin health check command
+    bot.command('health', async (ctx: any) => {
+      if (this.botController) {
+        await this.botController.handleHealthCommand(ctx);
+      }
+    });
+
+    // Admin statistics command
+    bot.command('stats', async (ctx: any) => {
+      if (this.botController) {
+        await this.botController.handleStatsCommand(ctx);
+      }
+    });
+
+    // Admin cleanup command
+    bot.command('cleanup', async (ctx: any) => {
+      if (this.botController) {
+        await this.botController.handleCleanupCommand(ctx);
+      }
+    });
+
     // Text messages for TikTok links (must be AFTER commands)
     bot.on('text', async (ctx: any) => {
       if (this.botController) {

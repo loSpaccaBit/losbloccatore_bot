@@ -27,6 +27,7 @@ export declare class BotController {
     handleHealthCommand(ctx: Context): Promise<void>;
     handleStatsCommand(ctx: Context): Promise<void>;
     handleCleanupCommand(ctx: Context): Promise<void>;
+    handleContestCommand(ctx: Context): Promise<void>;
     handleMyChatMember(ctx: Context): Promise<void>;
     getJoinRequestHandler(): JoinRequestHandler;
     getMemberLifecycleHandler(): MemberLifecycleHandler;

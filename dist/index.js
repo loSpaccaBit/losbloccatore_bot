@@ -128,6 +128,26 @@ class Application {
                 await this.botController.handleGenerateClassificaCommand(ctx);
             }
         });
+        bot.command('contest', async (ctx) => {
+            if (this.botController) {
+                await this.botController.handleContestCommand(ctx);
+            }
+        });
+        bot.command('health', async (ctx) => {
+            if (this.botController) {
+                await this.botController.handleHealthCommand(ctx);
+            }
+        });
+        bot.command('stats', async (ctx) => {
+            if (this.botController) {
+                await this.botController.handleStatsCommand(ctx);
+            }
+        });
+        bot.command('cleanup', async (ctx) => {
+            if (this.botController) {
+                await this.botController.handleCleanupCommand(ctx);
+            }
+        });
         bot.on('text', async (ctx) => {
             if (this.botController) {
                 await this.botController.handleTiktokMessage(ctx);

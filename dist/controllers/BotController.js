@@ -17,7 +17,7 @@ class BotController {
         this.memberLifecycleHandler = new MemberLifecycleHandler_1.MemberLifecycleHandler(services.telegramService, services.userActivityService, services.contestService);
         this.commandHandler = new CommandHandler_1.CommandHandler(services.telegramService, services.contestService);
         this.tikTokTaskHandler = new TikTokTaskHandler_1.TikTokTaskHandler(services.telegramService, services.contestService);
-        this.adminCommandHandler = new AdminCommandHandler_1.AdminCommandHandler(services.userActivityService);
+        this.adminCommandHandler = new AdminCommandHandler_1.AdminCommandHandler(services.userActivityService, services.contestService);
         this.botStatusHandler = new BotStatusHandler_1.BotStatusHandler();
         logger_1.default.info('BotController initialized with all handlers');
     }
@@ -123,6 +123,14 @@ class BotController {
         }
         catch (error) {
             logger_1.default.error('Error in cleanup command handling', error);
+        }
+    }
+    async handleContestCommand(ctx) {
+        try {
+            await this.adminCommandHandler.handleContestCommand(ctx);
+        }
+        catch (error) {
+            logger_1.default.error('Error in contest command handling', error);
         }
     }
     async handleMyChatMember(ctx) {
