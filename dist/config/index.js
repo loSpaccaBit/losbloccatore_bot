@@ -2,10 +2,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const validation_1 = require("./validation");
+const parseAdminUserIds = () => {
+    const adminIds = [];
+    if (process.env.ADMIN_USER_IDS) {
+        const ids = process.env.ADMIN_USER_IDS.split(',')
+            .map(id => parseInt(id.trim(), 10))
+            .filter(id => !isNaN(id));
+        adminIds.push(...ids);
+    }
+    if (process.env.ADMIN_USER_ID && adminIds.length === 0) {
+        const id = parseInt(process.env.ADMIN_USER_ID, 10);
+        if (!isNaN(id)) {
+            adminIds.push(id);
+        }
+    }
+    return adminIds;
+};
 const config = {
     token: process.env.BOT_TOKEN || '',
     channelId: process.env.CHANNEL_ID || '',
     ...(process.env.ADMIN_USER_ID && { adminUserId: parseInt(process.env.ADMIN_USER_ID, 10) }),
+    adminUserIds: parseAdminUserIds(),
     environment: process.env.NODE_ENV || 'development',
     port: parseInt(process.env.PORT || '3000', 10),
     database: {

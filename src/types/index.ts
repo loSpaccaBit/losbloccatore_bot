@@ -1,7 +1,8 @@
 export interface BotConfig {
   token: string;
   channelId: string;
-  adminUserId?: number;
+  adminUserId?: number; // Deprecated - use adminUserIds instead
+  adminUserIds: number[];
   environment: 'development' | 'production' | 'test';
   port: number;
   database: DatabaseConfig;

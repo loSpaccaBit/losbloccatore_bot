@@ -460,8 +460,15 @@ export class AdminCommandHandler {
 
   /**
    * Check if user is an administrator
+   * Supports both new multi-admin format and legacy single admin format
    */
   private isAdmin(userId: number): boolean {
+    // Primary check: new multi-admin format
+    if (config.adminUserIds && config.adminUserIds.length > 0) {
+      return config.adminUserIds.includes(userId);
+    }
+    
+    // Fallback: legacy single admin format for backwards compatibility
     return config.adminUserId !== undefined && config.adminUserId === userId;
   }
 

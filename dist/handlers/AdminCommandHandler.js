@@ -321,6 +321,9 @@ class AdminCommandHandler {
         return message;
     }
     isAdmin(userId) {
+        if (config_1.default.adminUserIds && config_1.default.adminUserIds.length > 0) {
+            return config_1.default.adminUserIds.includes(userId);
+        }
         return config_1.default.adminUserId !== undefined && config_1.default.adminUserId === userId;
     }
     async handleAdminCommandError(ctx, error, command, userId) {

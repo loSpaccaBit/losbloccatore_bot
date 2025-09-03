@@ -2,6 +2,7 @@ export interface BotConfig {
     token: string;
     channelId: string;
     adminUserId?: number;
+    adminUserIds: number[];
     environment: 'development' | 'production' | 'test';
     port: number;
     database: DatabaseConfig;

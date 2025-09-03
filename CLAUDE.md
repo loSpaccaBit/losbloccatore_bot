@@ -99,7 +99,8 @@ Optional configuration:
 - `DB_LOGGING` - Enable database query logging (default: false)
 - `LOG_LEVEL` - Logging level (error/warn/info/debug)
 - `CACHE_TTL` - Cache TTL in seconds
-- `ADMIN_USER_ID` - Admin user ID for management commands
+- `ADMIN_USER_IDS` - Comma-separated list of admin user IDs for management commands (e.g., "123456789,987654321")
+- `ADMIN_USER_ID` - Single admin user ID (legacy format - use ADMIN_USER_IDS instead)
 
 ### Configuration Validation
 The application uses Joi for robust configuration validation with detailed error messages.
@@ -175,9 +176,10 @@ The application uses Joi for robust configuration validation with detailed error
 ### User Commands
 - `/start` - Bot introduction and status
   
-### Admin Commands (require ADMIN_USER_ID)
+### Admin Commands (require ADMIN_USER_IDS or ADMIN_USER_ID)
 - `/health` - System health check and statistics
 - `/stats` - Channel statistics and analytics
+- `/contest` - Contest performance and engagement metrics
 - `/cleanup` - Remove old activity records
 
 ## Advanced Features
