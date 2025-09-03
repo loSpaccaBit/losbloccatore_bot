@@ -15,10 +15,27 @@ export class LeaderboardSchedulerService {
 
   constructor(chatId?: number, cronExpression?: string) {
     this.chatId = chatId || Number(config.channelId);
-    // Set admin user ID from config if available
-    this.adminUserId = config.adminUserId ? Number(config.adminUserId) : null;
+    // Set admin user ID from config if available (support both new and legacy formats)
+    this.adminUserId = this.getFirstAdminUserId();
     // Default: every hour at minute 0 (e.g., 13:00, 14:00, 15:00...)
     this.cronExpression = cronExpression || '0 * * * *';
+  }
+
+  /**
+   * Get the first admin user ID from either the new multi-admin format or legacy single admin format
+   */
+  private getFirstAdminUserId(): number | null {
+    // Priority 1: New multi-admin format
+    if (config.adminUserIds && config.adminUserIds.length > 0) {
+      return config.adminUserIds[0];
+    }
+    
+    // Fallback: Legacy single admin format
+    if (config.adminUserId) {
+      return Number(config.adminUserId);
+    }
+    
+    return null;
   }
 
   private getTelegramService(): TelegramService {
@@ -42,7 +59,7 @@ export class LeaderboardSchedulerService {
     }
 
     if (!this.adminUserId) {
-      logger.error('Cannot start leaderboard scheduler: ADMIN_USER_ID not configured');
+      logger.error('Cannot start leaderboard scheduler: No admin user configured (set ADMIN_USER_IDS or ADMIN_USER_ID)');
       return;
     }
 
@@ -95,7 +112,7 @@ export class LeaderboardSchedulerService {
   async generateAndSendLeaderboard(): Promise<void> {
     try {
       if (!this.adminUserId) {
-        logger.error('Cannot send leaderboard: admin user ID not configured');
+        logger.error('Cannot send leaderboard: No admin user configured (set ADMIN_USER_IDS or ADMIN_USER_ID)');
         return;
       }
 

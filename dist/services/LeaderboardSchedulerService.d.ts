@@ -7,6 +7,7 @@ export declare class LeaderboardSchedulerService {
     private telegramService;
     private leaderboardImageService;
     constructor(chatId?: number, cronExpression?: string);
+    private getFirstAdminUserId;
     private getTelegramService;
     private getLeaderboardImageService;
     start(): void;

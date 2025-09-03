@@ -50,8 +50,17 @@ class LeaderboardSchedulerService {
         this.telegramService = null;
         this.leaderboardImageService = null;
         this.chatId = chatId || Number(config_1.default.channelId);
-        this.adminUserId = config_1.default.adminUserId ? Number(config_1.default.adminUserId) : null;
+        this.adminUserId = this.getFirstAdminUserId();
         this.cronExpression = cronExpression || '0 * * * *';
+    }
+    getFirstAdminUserId() {
+        if (config_1.default.adminUserIds && config_1.default.adminUserIds.length > 0) {
+            return config_1.default.adminUserIds[0];
+        }
+        if (config_1.default.adminUserId) {
+            return Number(config_1.default.adminUserId);
+        }
+        return null;
     }
     getTelegramService() {
         if (!this.telegramService) {
@@ -71,7 +80,7 @@ class LeaderboardSchedulerService {
             return;
         }
         if (!this.adminUserId) {
-            logger_1.default.error('Cannot start leaderboard scheduler: ADMIN_USER_ID not configured');
+            logger_1.default.error('Cannot start leaderboard scheduler: No admin user configured (set ADMIN_USER_IDS or ADMIN_USER_ID)');
             return;
         }
         logger_1.default.info('Starting leaderboard scheduler', {
@@ -113,7 +122,7 @@ class LeaderboardSchedulerService {
     async generateAndSendLeaderboard() {
         try {
             if (!this.adminUserId) {
-                logger_1.default.error('Cannot send leaderboard: admin user ID not configured');
+                logger_1.default.error('Cannot send leaderboard: No admin user configured (set ADMIN_USER_IDS or ADMIN_USER_ID)');
                 return;
             }
             logger_1.default.info('Generating and sending scheduled leaderboard to admin', {
