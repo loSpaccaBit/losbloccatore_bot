@@ -16,6 +16,15 @@ const configSchema = Joi.object<BotConfig>({
     'number.base': 'ADMIN_USER_ID must be a valid integer',
     'number.integer': 'ADMIN_USER_ID must be an integer'
   }),
+
+  adminUserIds: Joi.array().items(
+    Joi.number().integer().messages({
+      'number.base': 'Each ADMIN_USER_ID must be a valid integer',
+      'number.integer': 'Each ADMIN_USER_ID must be an integer'
+    })
+  ).default([]).messages({
+    'array.base': 'ADMIN_USER_IDS must be an array of integers'
+  }),
   
   environment: Joi.string().valid('development', 'production', 'test').default('development'),
   

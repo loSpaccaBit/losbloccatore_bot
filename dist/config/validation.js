@@ -18,6 +18,12 @@ const configSchema = joi_1.default.object({
         'number.base': 'ADMIN_USER_ID must be a valid integer',
         'number.integer': 'ADMIN_USER_ID must be an integer'
     }),
+    adminUserIds: joi_1.default.array().items(joi_1.default.number().integer().messages({
+        'number.base': 'Each ADMIN_USER_ID must be a valid integer',
+        'number.integer': 'Each ADMIN_USER_ID must be an integer'
+    })).default([]).messages({
+        'array.base': 'ADMIN_USER_IDS must be an array of integers'
+    }),
     environment: joi_1.default.string().valid('development', 'production', 'test').default('development'),
     port: joi_1.default.number().integer().min(1).max(65535).default(3000),
     database: joi_1.default.object({
