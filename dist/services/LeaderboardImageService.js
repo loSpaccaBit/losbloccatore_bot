@@ -58,7 +58,7 @@ class LeaderboardImageService {
                 const position = positions[i];
                 const displayName = participant.username
                     ? `@${participant.username}`
-                    : participant.fullName;
+                    : participant.firstName;
                 const text = displayName;
                 const truncatedText = this.truncateText(ctx, text, position.maxWidth);
                 const textX = position.x;
@@ -116,7 +116,7 @@ class LeaderboardImageService {
                 rank: index + 1,
                 username: participant.username
                     ? `@${participant.username}`
-                    : participant.fullName,
+                    : participant.firstName,
                 points: participant.points
             }));
         }

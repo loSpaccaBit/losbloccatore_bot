@@ -100,7 +100,7 @@ export class LeaderboardImageService {
 
         const displayName = participant.username
           ? `@${participant.username}`
-          : participant.fullName;
+          : participant.firstName;
 
         const text = displayName;
 
@@ -175,7 +175,7 @@ export class LeaderboardImageService {
         rank: index + 1,
         username: participant.username
           ? `@${participant.username}`
-          : participant.fullName,
+          : participant.firstName,
         points: participant.points
       }));
     } catch (error) {

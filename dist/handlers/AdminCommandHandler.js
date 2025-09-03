@@ -24,7 +24,7 @@ class AdminCommandHandler {
         try {
             await ctx.reply('🔄 Generando la classifica...');
             await LeaderboardSchedulerService_1.default.sendLeaderboardNow();
-            await ctx.reply('✅ Classifica generata e inviata nel canale!');
+            await ctx.reply('✅ Classifica generata e inviata in privato!');
             logger_1.default.info('Manual leaderboard generation triggered by admin', {
                 adminUserId: userId
             });
