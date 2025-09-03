@@ -160,11 +160,11 @@ class LeaderboardImageService {
             const ctx = canvas.getContext('2d');
             ctx.drawImage(templateImage, 0, 0);
             const positions = [
-                { x: 50, y: 110, maxWidth: 500 },
-                { x: 50, y: 155, maxWidth: 500 },
-                { x: 50, y: 200, maxWidth: 500 },
-                { x: 50, y: 245, maxWidth: 500 },
-                { x: 50, y: 290, maxWidth: 500 }
+                { x: 190, y: 435, maxWidth: 500 },
+                { x: 190, y: 565, maxWidth: 500 },
+                { x: 190, y: 690, maxWidth: 500 },
+                { x: 190, y: 815, maxWidth: 500 },
+                { x: 190, y: 940, maxWidth: 500 }
             ];
             this.applyTextStyle(ctx, LeaderboardImageService.EMPTY_TEXT_CONFIG);
             for (let i = 0; i < 5; i++) {
@@ -199,12 +199,12 @@ LeaderboardImageService.MAIN_TEXT_CONFIG = {
     shadowBlur: 4
 };
 LeaderboardImageService.EMPTY_TEXT_CONFIG = {
-    fillStyle: '#CCCCCC',
+    fillStyle: '#FFFFFF',
     strokeStyle: '#000000',
-    lineWidth: 1.5,
-    font: 'italic 24px "Azeret Mono", monospace',
-    shadowColor: 'rgba(0, 0, 0, 0.4)',
-    shadowOffset: { x: 1, y: 1 },
-    shadowBlur: 3
+    lineWidth: 2,
+    font: 'bold 36px "Azeret Mono", monospace',
+    shadowColor: 'rgba(0, 0, 0, 0.5)',
+    shadowOffset: { x: 2, y: 2 },
+    shadowBlur: 4
 };
 //# sourceMappingURL=LeaderboardImageService.js.map

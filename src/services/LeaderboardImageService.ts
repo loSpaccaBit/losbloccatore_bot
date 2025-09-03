@@ -23,13 +23,13 @@ export class LeaderboardImageService {
   };
 
   private static readonly EMPTY_TEXT_CONFIG = {
-    fillStyle: '#CCCCCC',
+    fillStyle: '#FFFFFF',
     strokeStyle: '#000000',
-    lineWidth: 1.5,
-    font: 'italic 24px "Azeret Mono", monospace',
-    shadowColor: 'rgba(0, 0, 0, 0.4)',
-    shadowOffset: { x: 1, y: 1 },
-    shadowBlur: 3
+    lineWidth: 2,
+    font: 'bold 36px "Azeret Mono", monospace',
+    shadowColor: 'rgba(0, 0, 0, 0.5)',
+    shadowOffset: { x: 2, y: 2 },
+    shadowBlur: 4
   };
 
   private contestService: ContestService | null = null;
@@ -229,11 +229,11 @@ export class LeaderboardImageService {
 
       // Define improved positions for empty leaderboard closer to left edge
       const positions = [
-        { x: 50, y: 110, maxWidth: 500 }, // 1st place
-        { x: 50, y: 155, maxWidth: 500 }, // 2nd place  
-        { x: 50, y: 200, maxWidth: 500 }, // 3rd place
-        { x: 50, y: 245, maxWidth: 500 }, // 4th place
-        { x: 50, y: 290, maxWidth: 500 }  // 5th place
+        { x: 190, y: 435, maxWidth: 500 }, // 1st place - closer to left edge
+        { x: 190, y: 565, maxWidth: 500 }, // 2nd place (580 = 450 + 130)
+        { x: 190, y: 690, maxWidth: 500 }, // 3rd place (710 = 580 + 130)
+        { x: 190, y: 815, maxWidth: 500 }, // 4th place (840 = 710 + 130)
+        { x: 190, y: 940, maxWidth: 500 }  // 5th place (970 = 840 + 130)
       ];
 
       // Apply empty text styling configuration
