@@ -181,6 +181,7 @@ The application uses Joi for robust configuration validation with detailed error
 - `/stats` - Channel statistics and analytics
 - `/contest` - Contest performance and engagement metrics
 - `/cleanup` - Remove old activity records
+- `/message <user_id> <message>` - Send private message to specific user
 
 ## Advanced Features
 

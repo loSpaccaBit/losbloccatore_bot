@@ -210,6 +210,17 @@ export class BotController {
   }
 
   /**
+   * Handle admin message command - delegate to AdminCommandHandler
+   */
+  async handleMessageCommand(ctx: Context): Promise<void> {
+    try {
+      await this.adminCommandHandler.handleMessageCommand(ctx);
+    } catch (error) {
+      logger.error('Error in admin message command handling', error as Error);
+    }
+  }
+
+  /**
    * Handle bot status changes - delegate to BotStatusHandler
    */
   async handleMyChatMember(ctx: Context): Promise<void> {

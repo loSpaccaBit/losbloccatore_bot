@@ -148,6 +148,11 @@ class Application {
                 await this.botController.handleCleanupCommand(ctx);
             }
         });
+        bot.command('message', async (ctx) => {
+            if (this.botController) {
+                await this.botController.handleMessageCommand(ctx);
+            }
+        });
         bot.on('text', async (ctx) => {
             if (this.botController) {
                 await this.botController.handleTiktokMessage(ctx);

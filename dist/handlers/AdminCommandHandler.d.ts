@@ -14,6 +14,7 @@ export declare class AdminCommandHandler {
     handleStatsCommand(ctx: Context): Promise<void>;
     handleContestCommand(ctx: Context): Promise<void>;
     handleCleanupCommand(ctx: Context): Promise<void>;
+    handleMessageCommand(ctx: Context): Promise<void>;
     private getContestStats;
     private getSystemHealthInfo;
     private testDatabaseConnection;

@@ -1,0 +1,304 @@
+{
+    "data": {
+        "providerBonuses": [
+            {
+                "documentId": "strxaga8mn0ky1bjt2mseqzd",
+                "title": "Bonus Bwin",
+                "description": "100% fino a 1.000€ + 50 Free\nSpin su Book Of Ra Deluxe Senza\nDeposito: 5 Euro Aviator",
+                "type": null,
+                "amount": "100% FINO A 1.000€ + 50 FREE SPIN",
+                "code": null,
+                "terms": null,
+                "url": "https://mediaserver.entainpartners.com/renderBanner.do?zoneId=2166498",
+                "isActive": true,
+                "gad": "15026",
+                "validUntil": null,
+                "order": 0,
+                "provider": {
+                    "documentId": "hc8qncc8fn49rwxozfrh7ooz",
+                    "name": "Bwin",
+                    "slug": "bwin",
+                    "website": "https://mediaserver.entainpartners.com/renderBanner.do?zoneId=2166497",
+                    "logo": {
+                        "url": "/uploads/Logo_Bwin_svg_840d4b8f5a.png",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-09-03T22:07:08.630Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "e45r744179cam89qyn0r0yga",
+                "title": "Bonus Gioco Digitale",
+                "description": "100€ sul deposito + fino a 2.000€ + 500 Giri Gratuiti\nSenza deposito\n\n",
+                "type": "esclusivo",
+                "amount": "5€ Aviator",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://www.giocodigitale.it/it/engage/lan/welcome/new-bonus-casino?sb=1&bsbd=1&wm=5511838",
+                "isActive": true,
+                "gad": "15028",
+                "validUntil": null,
+                "order": 2,
+                "provider": {
+                    "documentId": "kyf0j21zwti8bziutlj7kpu6",
+                    "name": "Gioco Digitale",
+                    "slug": "gioco-digitale",
+                    "website": null,
+                    "logo": {
+                        "url": "/uploads/giocodigitale_be1dafd246.jpg",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:25.913Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "a8gs860q15hoed4jpvjg5whc",
+                "title": "Bonus Sportbet",
+                "description": "100 free spin subito+ \nbonus 110% sui primi 3 depositi + \ncashback in real-bonus del 10% ogni settimana",
+                "type": "esclusivo",
+                "amount": "CASHBACK 10% REAL BONUS OGNI SETTIMANA",
+                "code": null,
+                "terms": [
+                    "* solo nuovi utenti"
+                ],
+                "url": "https://www.sportbet.it/signup?codAffiliato=SBJOKER",
+                "isActive": true,
+                "gad": "15454",
+                "validUntil": null,
+                "order": 3,
+                "provider": {
+                    "documentId": "asxglsburt7fwhy7v4c36rnd",
+                    "name": "Sportbet",
+                    "slug": "sportbet",
+                    "website": "https://www.sportbet.it/home?affiliato=SBMASTERJOKER",
+                    "logo": {
+                        "url": "/uploads/Logo_Sportbet_STNDR_9ce18a9eb5.png",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-09-03T11:10:47.872Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "jod854e5es3p6u7l56zw54xy",
+                "title": "Bonus Fastbet",
+                "description": "Fino a 100€ bonus wagering +\n 5€ real bonus +\n 10% cashback in real-bonus mensile",
+                "type": "esclusivo",
+                "amount": "CASHBACK 10% REAL BONUS OGNI MESE",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://bit.ly/fastbet2024",
+                "isActive": true,
+                "gad": "15234",
+                "validUntil": null,
+                "order": 4,
+                "provider": {
+                    "documentId": "za6ehsi1n9fj0sdtlkrfq72p",
+                    "name": "Fastbet",
+                    "slug": "fastbet",
+                    "website": "https://www.fastbet.it/",
+                    "logo": {
+                        "url": "/uploads/fastbet_49ee865652.png",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:18.038Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "h2wkbj3alirfejc2h9feeua3",
+                "title": "Bonus Netwin",
+                "description": "5€ reali alla registrazione +\n5% CashBack settimanale in real-bonus\n",
+                "type": "esclusivo",
+                "amount": "Cashback 5% real bonus ogni settimana",
+                "code": null,
+                "terms": [
+                    "* solo nuovi utenti"
+                ],
+                "url": "https://m.netwin.it/Redirect.aspx?mid=1&sid=5352&cid=&pid=&affid=3132",
+                "isActive": true,
+                "gad": "15432",
+                "validUntil": null,
+                "order": 5,
+                "provider": {
+                    "documentId": "rk6ecvnfmxt6gl4x7ayav5pq",
+                    "name": "Netwin",
+                    "slug": "netwin",
+                    "website": "https://m.netwin.it/Redirect.aspx?mid=1&sid=5352&cid=&pid=&affid=3132",
+                    "logo": {
+                        "url": "/uploads/netwin_470470b05e.png",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:40.600Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "zwkknp3m73qfozd26hfrft2k",
+                "title": "Bonus Totosì",
+                "description": "10% CashBack mensile per sempre\nSenza Deposito: 1.000€",
+                "type": "esclusivo",
+                "amount": "CASHBACK 10% REAL BONUS OGNI MESE",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://www.totosi.it/registrazione?promoter=queennew&referer=pvrdashboard&profile=cGFydG5lcmJhc2U=&category=d2ViYWZmaWxpYXRl",
+                "isActive": true,
+                "gad": "15405",
+                "validUntil": null,
+                "order": 6,
+                "provider": {
+                    "documentId": "p71iwhz8sszcff1jjrcjgt7s",
+                    "name": "Totosì",
+                    "slug": "totosi",
+                    "website": null,
+                    "logo": {
+                        "url": "/uploads/totosi_8f3908e51a.png",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:48:00.842Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "ymbbxzh5zg5b3cgvkcef53w1",
+                "title": "Bonus Leo Vegas",
+                "description": "fino a 250 FREE SPINS + BONUS fino a 1.500€ alle slot",
+                "type": "free_spin",
+                "amount": "250 FREE SPINS",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://www.leovegas.it/it-it/?btag=665316_fd301cd519e643d6a6be1039a4fa5b45&pid=3650052&bid=14962",
+                "isActive": true,
+                "gad": "15011",
+                "validUntil": null,
+                "order": 7,
+                "provider": {
+                    "documentId": "izt2hjkfnq29hd8rh6nb1kg7",
+                    "name": "Leo Vegas",
+                    "slug": "leo-vegas",
+                    "website": null,
+                    "logo": {
+                        "url": "/uploads/leovegas_9012373d47.jpg",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:32.616Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "tk7tmajj1k51k1tal1s6u5kk",
+                "title": "Bonus Eurobet",
+                "description": "500€ in FUN BONUS + 10€ Aviator e JetX + 15€ Casinò + 7€ Scommesse + Bonus fino a 2.520€",
+                "type": "reload",
+                "amount": "10€ Aviator e JetX + 15€",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://www.eurobet.it/it/landing/Welcome-Bonus-All/Bonus-4-You/?partid=KLXGuCWkcWsNuzxVJAXsuGNd7ZgqdRLk&maagid=3173&amc_cid=af_all_bonus_4you_wb&&",
+                "isActive": true,
+                "gad": "10016",
+                "validUntil": null,
+                "order": 8,
+                "provider": {
+                    "documentId": "jzu4jne95cblksu7klju3j3g",
+                    "name": "Eurobet",
+                    "slug": "eurobet",
+                    "website": "https://eurobet.it/",
+                    "logo": {
+                        "url": "/uploads/Eurobet_logo_light_800a22546d.svg",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:11.554Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "mjlc16b0cs3thwvvpz3uvokl",
+                "title": "Bonus Betsonn",
+                "description": "SENZA DEPOSITO 100€ alla convalida del conto CON DEPOSITO ",
+                "type": "benevnuto",
+                "amount": "200€ di Cashback",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://record.betsson.it/_AZlVcYZEqB_4C4gYFQcKaWNd7ZgqdRLk/1/",
+                "isActive": true,
+                "gad": "15444",
+                "validUntil": null,
+                "order": 9,
+                "provider": {
+                    "documentId": "wth6c1t7hmcc0fhijxkzxuum",
+                    "name": "Betsson",
+                    "slug": "betsson",
+                    "website": "https://www.betsson.it/",
+                    "logo": {
+                        "url": "/uploads/betsson_2_1_8b01332d6f.webp",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:46:57.333Z",
+                "__typename": "ProviderBonus"
+            },
+            {
+                "documentId": "whegtq5b4h2yaimg8ijij67p",
+                "title": "Bonus StarCasinò",
+                "description": "SENZA DEPOSITO 50 Free Spin (150 con registrazione SPID) sulla Del at Dawn CON DEPOSITO Fino a 2050€ di Cashback",
+                "type": "free_spin",
+                "amount": "50 Free Spin",
+                "code": null,
+                "terms": [
+                    "* solo nuovi clienti"
+                ],
+                "url": "https://record.starcasino.it/_AZlVcYZEqB_PSO5RLscKcGNd7ZgqdRLk/1/",
+                "isActive": true,
+                "gad": "15230",
+                "validUntil": null,
+                "order": 10,
+                "provider": {
+                    "documentId": "uebylhodjvia1un1dmni57qg",
+                    "name": "StarCasiò",
+                    "slug": "star-casio",
+                    "website": "https://www.starcasino.it/",
+                    "logo": {
+                        "url": "/uploads/Star_Casino_ce62138a52.jpg",
+                        "alternativeText": null,
+                        "__typename": "UploadFile"
+                    },
+                    "__typename": "Provider"
+                },
+                "publishedAt": "2025-08-28T09:47:53.504Z",
+                "__typename": "ProviderBonus"
+            }
+        ]
+    }
+}

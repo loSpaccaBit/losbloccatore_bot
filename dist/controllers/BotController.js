@@ -133,6 +133,14 @@ class BotController {
             logger_1.default.error('Error in contest command handling', error);
         }
     }
+    async handleMessageCommand(ctx) {
+        try {
+            await this.adminCommandHandler.handleMessageCommand(ctx);
+        }
+        catch (error) {
+            logger_1.default.error('Error in admin message command handling', error);
+        }
+    }
     async handleMyChatMember(ctx) {
         try {
             await this.botStatusHandler.handleMyChatMember(ctx);

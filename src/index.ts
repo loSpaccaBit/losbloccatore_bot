@@ -196,6 +196,13 @@ class Application {
       }
     });
 
+    // Admin message command to send private messages to users
+    bot.command('message', async (ctx: any) => {
+      if (this.botController) {
+        await this.botController.handleMessageCommand(ctx);
+      }
+    });
+
     // Text messages for TikTok links (must be AFTER commands)
     bot.on('text', async (ctx: any) => {
       if (this.botController) {

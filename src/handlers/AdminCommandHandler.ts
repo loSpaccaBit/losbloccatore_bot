@@ -227,6 +227,117 @@ export class AdminCommandHandler {
   }
 
   /**
+   * Handle admin message command to send private messages to users (admin only)
+   */
+  async handleMessageCommand(ctx: Context): Promise<void> {
+    if (!('message' in ctx.update)) {
+      return;
+    }
+
+    const message = ctx.update.message;
+    const userId = message.from?.id;
+
+    if (!userId || !this.isAdmin(userId)) {
+      await ctx.reply('❌ Comando disponibile solo per gli amministratori.');
+      return;
+    }
+
+    // Parse command arguments
+    if (!('text' in message)) {
+      await ctx.reply('❌ Comando deve essere inviato come messaggio di testo.');
+      return;
+    }
+    
+    const messageText = message.text;
+    if (!messageText) {
+      await ctx.reply('❌ Testo del messaggio non trovato.');
+      return;
+    }
+
+    // Extract command arguments: /message <user_id> <message_text>
+    const args = messageText.split(' ');
+    let targetUserId: number | undefined;
+
+    try {
+      if (args.length < 3) {
+        await ctx.reply('❌ *Uso corretto:*\n`/message <user_id> <messaggio>`\n\nEsempio: `/message 123456789 Ciao! Questo è un messaggio dall\'admin.`', 
+          { parse_mode: 'Markdown' });
+        return;
+      }
+
+      // Parse target user ID
+      targetUserId = parseInt(args[1]);
+      if (isNaN(targetUserId)) {
+        await ctx.reply('❌ ID utente non valido. Deve essere un numero.');
+        return;
+      }
+
+      // Extract message text (everything after the user ID)
+      const messageToSend = args.slice(2).join(' ');
+      if (messageToSend.trim().length === 0) {
+        await ctx.reply('❌ Il messaggio non può essere vuoto.');
+        return;
+      }
+
+      // Validate message length (Telegram limit is 4096 characters)
+      if (messageToSend.length > 4096) {
+        await ctx.reply('❌ Il messaggio è troppo lungo. Massimo 4096 caratteri.');
+        return;
+      }
+
+      // Send confirmation to admin
+      await ctx.reply('🔄 Invio del messaggio in corso...');
+
+      // Send message to target user via TelegramService
+      const telegramService = this.getTelegramService();
+      const bot = telegramService.getBot();
+      
+      await bot.telegram.sendMessage(targetUserId, messageToSend, {
+        parse_mode: 'Markdown',
+        link_preview_options: { is_disabled: true }
+      });
+
+      // Send success confirmation to admin
+      await ctx.reply(`✅ *Messaggio inviato con successo*\n\n👤 **Destinatario:** ${targetUserId}\n📝 **Messaggio:** ${messageToSend.substring(0, 100)}${messageToSend.length > 100 ? '...' : ''}`, 
+        { parse_mode: 'Markdown' });
+
+      logger.info('Admin message sent successfully', {
+        adminUserId: userId,
+        targetUserId,
+        messagePreview: messageToSend.substring(0, 100),
+        messageLength: messageToSend.length
+      });
+
+    } catch (error) {
+      // Enhanced error handling with specific user feedback
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let userFeedback = '❌ Errore durante l\'invio del messaggio.';
+
+      // Handle specific Telegram API errors
+      if (errorMessage.includes('blocked') || errorMessage.includes('Forbidden')) {
+        userFeedback = '❌ *Impossibile inviare il messaggio*\n\n🚫 L\'utente ha bloccato il bot o le sue impostazioni di privacy impediscono la ricezione di messaggi.';
+      } else if (errorMessage.includes('not found') || errorMessage.includes('chat not found')) {
+        userFeedback = '❌ *Utente non trovato*\n\nL\'ID utente specificato non esiste o l\'utente ha eliminato il proprio account.';
+      } else if (errorMessage.includes('Bad Request')) {
+        userFeedback = '❌ *Richiesta non valida*\n\nVerifica che l\'ID utente sia corretto e che il messaggio non contenga caratteri non supportati.';
+      } else if (errorMessage.includes('Too Many Requests')) {
+        userFeedback = '❌ *Troppe richieste*\n\nIl bot ha raggiunto i limiti di velocità di Telegram. Riprova tra qualche minuto.';
+      }
+
+      await ctx.reply(userFeedback, { parse_mode: 'Markdown' });
+      
+      // Log detailed error information for debugging
+      logger.error('Failed to send admin message', error as Error, {
+        adminUserId: userId,
+        targetUserId: targetUserId || 'unknown',
+        errorDetails: errorMessage,
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        commandText: messageText?.substring(0, 100)
+      });
+    }
+  }
+
+  /**
    * Get contest statistics
    */
   private async getContestStats(): Promise<any> {
